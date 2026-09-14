@@ -1,0 +1,88 @@
+name: Kyla Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      room:
+        description: Room to run in
+        required: true
+        default: R1
+        type: string
+      agent:
+        description: Agent adapter to select
+        required: true
+        default: shell
+        type: choice
+        options:
+          - shell
+          - docker-agent
+          - codex
+          - claude
+          - copilot
+          - cursor
+          - droid
+      prompt:
+        description: Prompt to send to Kyla
+        required: true
+        type: string
+
+jobs:
+  run-kyla:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Ensure echo fallback agent exists
+        shell: bash
+        run: |
+          if [[ ! -f tools/echo_agent.py ]]; then
+            mkdir -p tools
+            cat > tools/echo_agent.py <<'PY'
+          import sys
+
+          prompt = " ".join(sys.argv[1:])
+          print("TEST AGENT ALIVE")
+          print(f"Received prompt: {prompt}")
+          PY
+          fi
+          chmod +x tools/echo_agent.py
+
+      - name: Run Kyla command interface
+        env:
+          ROOM: ${{ github.event.inputs.room }}
+          AGENT: ${{ github.event.inputs.agent }}
+          PROMPT: ${{ github.event.inputs.prompt }}
+        shell: bash
+        run: |
+          set -o pipefail
+          python main.py --room "${{ github.event.inputs.room }}" --agent "${{ github.event.inputs.agent }}" "${{ github.event.inputs.prompt }}" | tee kyla-main-output.txt
+          main_status=${PIPESTATUS[0]}
+          if [[ "$main_status" -ne 0 ]]; then
+            exit "$main_status"
+          fi
+
+          if python - "$AGENT" <<'PY'
+          import sys
+          import yaml
+
+          selected = sys.argv[1]
+          with open("config.yaml", "r", encoding="utf-8") as config_file:
+              config = yaml.safe_load(config_file) or {}
+          command = (config.get("agents", {}).get(selected) or {}).get("command")
+          raise SystemExit(0 if command is None else 1)
+          PY
+          then
+            echo "[NOTICE] Agent '$AGENT' has command: null; using the shell agent with tools/echo_agent.py. Configure the real agent adapter on the laptop."
+            python tools/echo_agent.py "$PROMPT"
+          fi
