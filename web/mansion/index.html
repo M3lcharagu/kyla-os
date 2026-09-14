@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070910">
+  <meta name="description" content="KYLA OS — a minimal A-Frame 3D mansion at night.">
+  <title>KYLA OS · Mansion</title>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <style>
+    :root { color-scheme: dark; --ink:#e8f1ff; --muted:#8290aa; --line:rgba(150,181,222,.2); --panel:rgba(10,15,27,.82); --cyan:#6ee7ff; --violet:#a78bfa; }
+    * { box-sizing:border-box; }
+    html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#070910; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    #hud { position:fixed; z-index:5; inset:0; pointer-events:none; }
+    .panel { pointer-events:auto; position:absolute; backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); background:linear-gradient(145deg,rgba(13,20,35,.9),rgba(8,12,22,.73)); border:1px solid var(--line); box-shadow:0 18px 70px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.05); }
+    #sophia { left:clamp(14px,3vw,42px); top:clamp(14px,3vw,36px); width:min(320px,calc(100vw - 28px)); padding:18px; border-radius:18px; }
+    .eyebrow { color:var(--cyan); font-size:10px; letter-spacing:.22em; text-transform:uppercase; font-weight:700; }
+    h1 { margin:8px 0 5px; font-size:clamp(18px,2vw,25px); letter-spacing:.08em; font-weight:550; }
+    #room-title { color:var(--ink); font-weight:650; font-size:13px; letter-spacing:.03em; }
+    #room-status { color:var(--muted); font-size:12px; line-height:1.5; margin-top:5px; }
+    .pulse { display:inline-block; width:7px; height:7px; margin-right:7px; border-radius:50%; background:#78f6b2; box-shadow:0 0 14px #78f6b2; }
+    #nav { right:clamp(14px,3vw,42px); top:clamp(14px,3vw,36px); width:min(264px,calc(100vw - 28px)); max-height:calc(100vh - 28px); padding:14px; border-radius:18px; overflow:auto; }
+    #nav h2 { margin:0 0 11px; color:var(--muted); font-size:10px; letter-spacing:.18em; text-transform:uppercase; font-weight:700; }
+    #nav-buttons { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    button { color:#bdcbe0; background:rgba(128,155,198,.08); border:1px solid rgba(150,181,222,.14); border-radius:9px; padding:9px 8px; cursor:pointer; font:inherit; font-size:10px; text-align:left; transition:.2s ease; }
+    button:hover, button:focus-visible, button.active { color:#07111c; background:linear-gradient(135deg,var(--cyan),#b5a7ff); border-color:transparent; outline:none; transform:translateY(-1px); }
+    button b { display:block; font-size:10px; letter-spacing:.05em; margin-bottom:2px; }
+    button span { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; opacity:.8; }
+    #hint { position:absolute; bottom:22px; left:50%; transform:translateX(-50%); padding:9px 14px; border:1px solid var(--line); border-radius:999px; background:rgba(5,9,17,.65); color:#93a5c2; font-size:11px; letter-spacing:.04em; white-space:nowrap; }
+    #brand { position:absolute; left:clamp(14px,3vw,42px); bottom:22px; color:rgba(221,232,249,.55); font-size:11px; letter-spacing:.25em; }
+    @media (max-width:700px) { #nav { top:auto; bottom:14px; right:14px; width:calc(100vw - 28px); max-height:29vh; } #sophia { width:245px; } #hint { display:none; } #brand { display:none; } }
+  </style>
+</head>
+<body>
+  <div id="hud" aria-live="polite">
+    <section id="sophia" class="panel" aria-label="SOPHIA assistant status">
+      <div class="eyebrow"><span class="pulse"></span>SOPHIA / ONLINE</div>
+      <h1>KYLA PENTHOUSE</h1>
+      <div id="room-title">FOYER LOBBY · NIGHT MODE</div>
+      <div id="room-status">Choose a room to open its ambient node. The house is quiet, listening.</div>
+    </section>
+    <nav id="nav" class="panel" aria-label="Mansion navigation">
+      <h2>14 spaces / navigate</h2>
+      <div id="nav-buttons"></div>
+    </nav>
+    <div id="brand">KYLA OS · 00:00 / LOCAL NODE</div>
+    <div id="hint">CLICK A GLOWING DOOR OR USE THE NAVIGATION PANEL</div>
+  </div>
+
+  <a-scene background="color: #070910" fog="type: exponential; color: #070910; density: 0.018" renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true" vr-mode-ui="enabled: false">
+    <a-entity id="world" position="0 0 0"></a-entity>
+    <a-entity id="camera-rig" position="0 2.8 14">
+      <a-camera id="camera" look-controls="enabled: true" wasd-controls="enabled: true; acceleration: 18" fov="68">
+        <a-entity cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .clickable; far: 50"></a-entity>
+      </a-camera>
+    </a-entity>
+    <a-entity light="type: ambient; color: #7890b4; intensity: 0.34"></a-entity>
+    <a-entity light="type: hemisphere; color: #8da4d1; groundColor: #060812; intensity: 0.36"></a-entity>
+    <a-entity light="type: directional; color: #94a8df; intensity: 0.35" position="-8 14 10"></a-entity>
+  </a-scene>
+
+  <script>
+    const rooms = [
+      ['R1','HUMANITAS','Command Center'], ['R2','PATIENTIA','Second Brain'], ['R3','TEMPERANTIA','Trading Room'],
+      ['R4','INDUSTRIA','Dev Lab'], ['R5','LUXURIA','Creative Studio'], ['R6','GULA','Editing Suite'],
+      ['R7','SUPERBIA','Broadcast Room'], ['R8','INVIDIA','Photo Studio'], ['R9','CARITAS','Client Lounge'],
+      ['R10','HUMILITAS','Study Room'], ['R11','AVARITIA','Business Ops'], ['R12','ACEDIA','Research & Intelligence'],
+      ['R13','IRA','QA & Security'], ['R14','CASTITAS','Life OS']
+    ];
+    const world = document.querySelector('#world');
+    const navButtons = document.querySelector('#nav-buttons');
+    const title = document.querySelector('#room-title');
+    const status = document.querySelector('#room-status');
+    const palette = ['#5ee7ff','#a78bfa','#78f6b2','#ffbf69'];
+
+    function entity(tag, attrs, parent = world) {
+      const el = document.createElement(tag);
+      Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+      parent.appendChild(el);
+      return el;
+    }
+    function mat(color, extra = '') { return `color:${color}; metalness:.55; roughness:.34; ${extra}`; }
+
+    // A compact penthouse shell: one floor, perimeter walls, city windows, and a luminous foyer.
+    entity('a-box', { position:'0 -0.12 0', width:'43', height:'.24', depth:'29', material:mat('#10182a') });
+    entity('a-box', { position:'0 4.3 -14.2', width:'43', height:'8.6', depth:'.35', material:mat('#11192b') });
+    entity('a-box', { position:'-21.4 4.3 0', width:'.35', height:'8.6', depth:'29', material:mat('#0d1425') });
+    entity('a-box', { position:'21.4 4.3 0', width:'.35', height:'8.6', depth:'29', material:mat('#0d1425') });
+    entity('a-box', { position:'0 4.3 14.2', width:'43', height:'8.6', depth:'.35', material:mat('#0d1425') });
+    entity('a-plane', { position:'0 5.7 -13.98', width:'39', height:'3.5', material:'color:#162844; opacity:.55; metalness:.2; roughness:.15' });
+    entity('a-text', { value:'KYLA / NIGHT CITY', position:'0 5.6 -13.77', align:'center', width:'10', color:'#5ee7ff', opacity:'.55', shader:'msdf' });
+
+    // Foyer: a glowing plinth plus a small in-world SOPHIA panel.
+    entity('a-cylinder', { position:'0 .35 7.6', radius:'2.3', height:'.25', segments:'32', material:'color:#172943; emissive:#122c45; emissiveIntensity:.7; metalness:.8; roughness:.25' });
+    entity('a-ring', { position:'0 .5 7.6', rotation:'-90 0 0', radiusInner:'1.7', radiusOuter:'1.9', material:'color:#5ee7ff; emissive:#5ee7ff; emissiveIntensity:2; shader:standard' });
+    entity('a-plane', { position:'0 3.05 6.0', rotation:'0 0 0', width:'4.3', height:'1.65', material:'color:#091321; opacity:.94; side:double; shader:standard' });
+    entity('a-text', { value:'SOPHIA', position:'0 3.55 5.96', align:'center', width:'4', color:'#6ee7ff', shader:'msdf' });
+    entity('a-text', { value:'FOYER LOBBY / LISTENING', position:'0 3.13 5.96', align:'center', width:'3.2', color:'#afc2dc', shader:'msdf' });
+    entity('a-text', { value:'SELECT A ROOM', position:'0 2.76 5.96', align:'center', width:'2.7', color:'#7188a8', shader:'msdf' });
+
+    // Low-poly room modules. Seven sit on each side of a central corridor.
+    rooms.forEach((room, index) => {
+      const row = index < 7 ? 0 : 1;
+      const col = index % 7;
+      const x = -15 + col * 5;
+      const z = row === 0 ? -7.7 : 7.7;
+      const face = row === 0 ? 1 : -1;
+      const color = palette[index % palette.length];
+      const group = entity('a-entity', { position:`${x} 0 ${z}` });
+      const depth = 5.15;
+      entity('a-box', { position:'0 .15 0', width:'4.55', height:'.24', depth:`${depth}`, material:mat('#151f32') }, group);
+      entity('a-box', { position:'-2.22 1.7 0', width:'.22', height:'3.4', depth:`${depth}`, material:mat('#1b2940') }, group);
+      entity('a-box', { position:'2.22 1.7 0', width:'.22', height:'3.4', depth:`${depth}`, material:mat('#1b2940') }, group);
+      entity('a-box', { position:`0 1.7 ${face * 2.48}`, width:'4.55', height:'3.4', depth:'.22', material:mat('#1a2940') }, group);
+      const door = entity('a-box', { class:'clickable', 'data-room':String(index), position:`0 1.18 ${face * 2.52}`, width:'1.42', height:'2.28', depth:'.16', material:mat(color, `emissive:${color}; emissiveIntensity:.28`), 'animation__hover':'property:scale; to:1.06 1.03 1; startEvents:mouseenter; pauseEvents:mouseleave; dur:180' }, group);
+      door.addEventListener('click', () => focusRoom(index));
+      entity('a-box', { position:`0 1.18 ${face * 2.63}`, width:'1.57', height:'2.42', depth:'.05', material:`color:${color}; emissive:${color}; emissiveIntensity:.32; opacity:.16; transparent:true` }, group);
+      entity('a-sphere', { class:'clickable', 'data-room':String(index), position:`.42 1.18 ${face * 2.67}`, radius:'.055', material:`color:${color}; emissive:${color}; emissiveIntensity:2` }, group);
+      const label = entity('a-text', { class:'clickable', 'data-room':String(index), value:`${room[0]}  ${room[1]}\n${room[2]}`, position:`0 3.55 ${face * 2.55}`, align:'center', anchor:'center', width:'4.2', color:color, opacity:'.9', shader:'msdf', 'look-at':'#camera' }, group);
+      label.addEventListener('click', () => focusRoom(index));
+      entity('a-entity', { light:`type:point; color:${color}; intensity:.32; distance:5`, position:`0 2.2 ${face * 2.0}` }, group);
+    });
+
+    // Sparse skyline lights keep the scene atmospheric without external assets.
+    for (let i = 0; i < 20; i++) {
+      const x = -19 + (i % 10) * 4.2;
+      const z = i < 10 ? -13.55 : 13.55;
+      entity('a-box', { position:`${x} ${1 + (i % 4) * .8} ${z}`, width:'.07', height:'.07', depth:'.07', material:'color:#6ee7ff; emissive:#6ee7ff; emissiveIntensity:2' });
+    }
+
+    rooms.forEach((room, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.room = index;
+      button.innerHTML = `<b>${room[0]} · ${room[1]}</b><span>${room[2]}</span>`;
+      button.addEventListener('click', () => focusRoom(index));
+      navButtons.appendChild(button);
+    });
+
+    function focusRoom(index) {
+      const room = rooms[index];
+      const row = index < 7 ? 0 : 1;
+      const col = index % 7;
+      const x = -15 + col * 5;
+      const z = row === 0 ? -7.7 : 7.7;
+      const face = row === 0 ? 1 : -1;
+      title.textContent = `${room[0]} ${room[1]} · ${room[2]}`;
+      status.textContent = `SOPHIA has opened the ${room[2].toLowerCase()} node. Click another door or use the navigation panel.`;
+      document.querySelectorAll('#nav button').forEach((button, i) => button.classList.toggle('active', i === index));
+      document.querySelectorAll('[data-room]').forEach(el => el.setAttribute('animation__select', `property:material.emissiveIntensity; from:.3; to:1.4; dir:alternate; loop:2; dur:260; startEvents:select`));
+      document.querySelectorAll(`[data-room="${index}"]`).forEach(el => el.emit('select'));
+      const rig = document.querySelector('#camera-rig');
+      const camera = document.querySelector('#camera');
+      const targetZ = z + face * 5.8;
+      rig.setAttribute('animation__move', `property:position; to:${x} 2.8 ${targetZ}; dur:850; easing:easeInOutQuad`);
+      camera.setAttribute('look-at', `${x} 1.6 ${z + face * 2.5}`);
+      setTimeout(() => camera.removeAttribute('look-at'), 1000);
+    }
+
+    document.querySelector('a-scene').addEventListener('loaded', () => {
+      document.querySelectorAll('[data-room]').forEach(el => el.addEventListener('mouseenter', () => el.setAttribute('scale','1.05 1.05 1.05')));
+      document.querySelectorAll('[data-room]').forEach(el => el.addEventListener('mouseleave', () => el.setAttribute('scale','1 1 1')));
+    });
+  </script>
+</body>
+</html>
