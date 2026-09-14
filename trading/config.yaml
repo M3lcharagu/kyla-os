@@ -1,0 +1,12 @@
+{
+  "note": "R3 TEMPERANTIA is paper-only. This configuration and the accompanying scripts do not send live trading orders.",
+  "market": {"timezone": "Africa/Nairobi", "timeframe": "M5", "poll_seconds": 5},
+  "account": {"initial_balance": 5000},
+  "risk": {"risk_per_trade": 0.0025, "max_trades_per_day": 3, "max_daily_loss": 100, "weekly_target": 150, "weekly_trailing_drawdown": 50, "reward_to_risk": 1.5, "commission_per_lot": 0, "atr_period": 14, "ema_period": 20, "sweep_lookback": 5, "min_body_ratio": 0.5, "min_close_location": 0.6, "stop_buffer_points": 2},
+  "session": {"days": [0, 1, 2, 3], "windows": ["08:00-18:00"]},
+  "strategy": {"atr_period": 14, "ema_period": 20, "sweep_lookback": 5, "min_body_ratio": 0.5, "min_close_location": 0.6, "stop_buffer_points": 2},
+  "instruments": {
+    "XAUUSD": {"point": 0.01, "volume_min": 0.01, "volume_max": 100, "volume_step": 0.01, "backtest_cash_per_price_unit_per_lot": 100},
+    "US100": {"point": 0.1, "volume_min": 0.01, "volume_max": 100, "volume_step": 0.01, "backtest_cash_per_price_unit_per_lot": 1}
+  }
+}
