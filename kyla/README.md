@@ -37,7 +37,7 @@ You can also use `npm run brain` and `npm run news` after installation. The news
 
 ## Files
 
-- `kyla-brain.js` — calls Gemini 2.5 Flash using `GEMINI_API_KEY`
+- `kyla-brain.js` — calls Gemini 2.5 Flash using `GEMINI_API_KEY
 
 - `kyla/STRATEGIES.md` defines three rule-based XAUUSD demo scalping strategies.
 - `kyla/journal.csv` is the example trade journal template for testing.
