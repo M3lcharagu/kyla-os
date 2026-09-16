@@ -26,7 +26,7 @@ Claude, Codex, Docker, WhatsApp, or other external services to be installed.
 | R5 | LUXURIA Creative Studio | Creative ideation and writing |
 | R6 | GULA Editing Suite | Video and audio editing workflows |
 | R7 | SUPERBIA Broadcast Room | Publishing and broadcasting |
-| R8 | INVIDIA Photo Studio | Image and photography workflows |
+| R8 | INVIDIA Photo Studio | Visual and photography workflows |
 | R9 | CARITAS Client Lounge | Client communication and delivery |
 | R10 | HUMILITAS Study Room | School and learning |
 | R11 | AVARITIA Business Ops | Business administration |
@@ -58,7 +58,7 @@ Agents are only routing labels until their commands are configured in `config.ya
 cd kyla
 
 py -m venv .venv
-.venv\Scripts\Activate.ps1
+.venv\\Scripts\\Activate.ps1
 
 pip install -r requirements.txt
 ```
@@ -192,3 +192,7 @@ This starter project does not automatically send WhatsApp messages, trade, publi
 delete files, or run Docker containers unless explicitly configured.
 
 Keep `runtime.dry_run: true` while building.
+
+- `kyla/STRATEGIES.md` defines three rule-based XAUUSD demo scalping strategies.
+- `kyla/journal.csv` is the example trade journal template for testing.
+- `node kyla/kyla-stats.js` reports performance statistics from the journal.
