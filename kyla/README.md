@@ -37,7 +37,4 @@ You can also use `npm run brain` and `npm run news` after installation. The news
 
 ## Files
 
-- `kyla-brain.js` — calls Gemini 2.5 Flash using `GEMINI_API_KEY` from `.env`.
-- `kyla-news.js` — reads the CoinDesk RSS feed and Hyperliquid `meta` endpoint.
-- `.env.example` — safe template for the local key.
-- `package.json` — Node.js dependencies and convenience scripts.
+- `kyla-brain.js` — calls Gemini 2.5 Flash using `GEMINI_API_KEY
