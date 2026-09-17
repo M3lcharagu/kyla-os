@@ -38,3 +38,15 @@ ROUND 2 COMMITTED
 - **caddyserver/caddy** — https://github.com/caddyserver/caddy — What: Fast extensible web server and reverse proxy with automatic HTTPS. — Room: R13 (secure service edge and deployment hygiene). — **USEFUL** — Reason: Small operational footprint and simple TLS defaults suit cloud-first KYLA services; still restrict admin endpoints, rotate secrets and verify proxy headers.
 
 ROUND 3 COMMITTED
+
+## ROUND 4 — Life OS / Esoteric / Study
+- Habitica — https://github.com/HabitRPG/habitica — What: open-source habit-building and task-management app using gamification. — Room: R14 CASTITAS Life OS. — USEFUL — Reason: supports recurring habits and routines with a web/mobile-friendly workflow; host remotely or use the service rather than taxing the old Mac.
+- Memos — https://github.com/usememos/memos — What: open-source, self-hosted memo/journaling and knowledge-capture application. — Room: R10 HUMILITAS Study Room. — USEFUL — Reason: lightweight capture and searchable reflection fit journaling and study notes; cloud/VPS hosting avoids local resource constraints.
+- TiddlyWiki5 — https://github.com/TiddlyWiki/TiddlyWiki5 — What: single-file, non-linear personal wiki for linked notes and knowledge management. — Room: R2 PATIENTIA Second Brain. — USEFUL — Reason: exceptionally low-resource and portable, with offline-friendly data ownership; sync and backup must be designed explicitly on iPhone/cloud.
+- SilverBullet — https://github.com/silverbulletmd/silverbullet — What: extensible Markdown-based personal knowledge management system with linking and scripting. — Room: R2 PATIENTIA Second Brain. — USEFUL — Reason: powerful plain-text, browser-based knowledge base suitable for cloud-first use; review extensions and keep the server remote for the old Mac.
+- Joplin — https://github.com/laurent22/joplin — What: open-source note-taking and to-do application with synchronization and end-to-end encryption options. — Room: R10 HUMILITAS Study Room. — USEFUL — Reason: mature cross-platform notes with mobile clients and sync, fitting iPhone study capture; use a modest sync target and retain export backups.
+- BookStack — https://github.com/BookStackApp/BookStack — What: self-hosted documentation and wiki platform organized into shelves, books, chapters and pages. — Room: R2 PATIENTIA Second Brain. — USEFUL — Reason: structured study/reference knowledge is easy to browse and share; cloud hosting is preferable because its web/database stack is heavier than a local single-file wiki.
+
+ROUND 4 COMMITTED
+Total repos: Round 1: 8, Round 2: 6, Round 3: 8, Round 4: 6
+Top 5 highest-value overall: kernc/backtesting.py (lightweight strategy research); TheSnowGuru/PyTrader-python-mt4-mt5-trading-api-connector-drag-n-drop (direct MT4/MT5 bridge); langgenius/dify (agent/RAG orchestration); run-llama/llama_index (private-data RAG); mifi/lossless-cut (old-Mac-friendly clipping).
