@@ -1,0 +1,12 @@
+(()=>{
+const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const weather=[{icon:'☼',temp:'22°',state:'soft clouds',range:'H 25° / L 17°'},{icon:'☁',temp:'20°',state:'cool + clear',range:'H 24° / L 16°'},{icon:'◌',temp:'23°',state:'highland breeze',range:'H 26° / L 18°'}];
+const date=new Intl.DateTimeFormat('en-KE',{weekday:'long',month:'short',day:'numeric'});$('#current-date').textContent=date.format(new Date());
+const w=weather[new Date().getDate()%weather.length];$('#weather-icon').textContent=w.icon;$('#temperature').textContent=w.temp;$('#weather-state').textContent=w.state;$('#weather-high-low').textContent=w.range;
+$$('[data-view-target]').forEach(b=>b.addEventListener('click',()=>$( '#'+b.dataset.viewTarget)?.scrollIntoView({behavior:'smooth',block:'start'})));
+const context=$('#chat-context');$$('.room').forEach(card=>card.addEventListener('click',()=>{const agent=card.dataset.agent;context.textContent=agent+' room / preview';$('#chat-input').placeholder='Leave a direction for '+agent+'...';$('#chat-log').insertAdjacentHTML('beforeend','<div class="message"><small>KYLA / room opened</small><p>'+agent+' is ready for a brief. What is the smallest useful result?</p></div>');$('#chat-log').lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'})}));
+$('#chat-form').addEventListener('submit',e=>{e.preventDefault();const input=$('#chat-input'),text=input.value.trim();if(!text)return;$('#chat-log').insertAdjacentHTML('beforeend','<div class="message user"><small>you / now</small><p>'+text.replace(/[&<>]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]))+'</p></div>');input.value='';$('#chat-log').lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'})});
+const focuses=[['Build the quiet version','A small, finished surface beats a perfect system waiting backstage.'],['Name the real signal','If it matters, make it visible before making it clever.'],['Protect the first hour','Give the next clear move a clean room to land in.']];let focus=0;$('#shuffle-focus').addEventListener('click',()=>{focus=(focus+1)%focuses.length;$('#focus-title').textContent=focuses[focus][0];$('#focus-copy').textContent=focuses[focus][1]});
+$('#focus-toggle').addEventListener('click',e=>{document.body.classList.toggle('focus-mode');e.currentTarget.setAttribute('aria-pressed',document.body.classList.contains('focus-mode'))});
+const panel=$('.scene-card'),url=(panel.dataset.sceneUrl||'').trim();if(url){$('#astra-frame').src=url;$('#scene-viewport').classList.add('has-scene')}
+})();
