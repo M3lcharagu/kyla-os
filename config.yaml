@@ -5,9 +5,12 @@ project:
 
 runtime:
   default_room: R1
-  default_agent: shell
+  # Local-first: Ollama uses zero cloud credits. Cloud agents stay command:null.
+  default_agent: ollama
   dry_run: true
-  timeout_seconds: 90
+  # Clips need longer than chat; agents can still finish faster.
+  timeout_seconds: 600
+  prefer_local: true
   allowed_docker_images: []
 
 rooms:
@@ -15,13 +18,13 @@ rooms:
     name: HUMANITAS Command Center
     purpose: Main command router
     aliases: [humanitas, command center, commands, main]
-    default_agent: shell
+    default_agent: ollama
 
   R2:
     name: PATIENTIA Second Brain
     purpose: Notes, memory, and personal knowledge
     aliases: [patientia, second brain, notes, memory]
-    default_agent: claude
+    default_agent: ollama
 
   R3:
     name: TEMPERANTIA Trading Room
@@ -33,43 +36,43 @@ rooms:
     name: INDUSTRIA Dev Lab
     purpose: Software development
     aliases: [industria, dev lab, coding, code, programming]
-    default_agent: codex
+    default_agent: ollama
 
   R5:
     name: LUXURIA Creative Studio
     purpose: Creative ideation and writing
     aliases: [luxuria, creative studio, writing, ideas]
-    default_agent: claude
+    default_agent: ollama
 
   R6:
     name: GULA Editing Suite
     purpose: Video and audio editing workflows
-    aliases: [gula, editing suite, video editing, audio editing]
-    default_agent: droid
+    aliases: [gula, editing suite, video editing, audio editing, capcut, clip, shorts]
+    default_agent: clip
 
   R7:
     name: SUPERBIA Broadcast Room
     purpose: Publishing and broadcasting
     aliases: [superbia, broadcast, publishing, content]
-    default_agent: copilot
+    default_agent: ollama
 
   R8:
     name: INVIDIA Photo Studio
     purpose: Image and photography workflows
     aliases: [invidia, photo studio, photography, images]
-    default_agent: droid
+    default_agent: ollama
 
   R9:
     name: CARITAS Client Lounge
     purpose: Client communication and delivery
     aliases: [caritas, client lounge, clients, client]
-    default_agent: claude
+    default_agent: ollama
 
   R10:
     name: HUMILITAS Study Room
     purpose: School and learning
     aliases: [humilitas, study room, study, school, learning]
-    default_agent: copilot
+    default_agent: ollama
 
   R11:
     name: AVARITIA Business Ops
@@ -81,7 +84,7 @@ rooms:
     name: ACEDIA Research
     purpose: General research
     aliases: [acedia, research, investigate, sources]
-    default_agent: claude
+    default_agent: ollama
 
   R13:
     name: IRA QA & Security
@@ -96,6 +99,7 @@ rooms:
     default_agent: shell
 
 agents:
+  # Cloud / external labels — left null so daily use burns ZERO paid credits.
   claude:
     mode: external
     command: null
@@ -123,3 +127,17 @@ agents:
   shell:
     mode: local
     command: null
+
+  # Local free path (Ollama HTTP — no cloud)
+  ollama:
+    mode: local
+    command: "python tools/ollama_agent.py"
+
+  # CapCut-style local clipper (yt-dlp + whisper + ffmpeg)
+  clip:
+    mode: local
+    command: "python tools/clip_agent.py"
+
+  capcut:
+    mode: local
+    command: "python tools/clip_agent.py"

@@ -1,0 +1,10 @@
+# Optional heavy video stack — keep base requirements.txt light.
+# Install: pip install -r requirements-clip.txt
+yt-dlp>=2024.1
+faster-whisper>=1.0
+scenedetect[opencv]>=0.6
+pydantic>=2.6
+rich>=13.7
+auto-editor>=24.0
+# Optional local LLM proxy cache (does NOT call paid APIs by itself):
+# litellm>=1.40

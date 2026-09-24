@@ -2,9 +2,10 @@
 KYLA command-line orchestrator.
 
 Examples:
-    python main.py "make a study plan"
-    python main.py --room R4 --agent codex "build a Python API"
-    python main.py --dry-run "research laptop options"
+    python main.py --dry-run "make a study plan"
+    python main.py --agent ollama --execute "3 study tips"   # local, $0
+    python main.py --room R6 --execute "clip https://youtube.com/..."
+    python main.py --room R4 --agent codex "build a Python API"  # only if wired
 """
 
 from __future__ import annotations
@@ -146,6 +147,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show routing without executing an agent",
     )
     parser.add_argument(
+        "--execute",
+        action="store_true",
+        help="Override runtime.dry_run and run the configured agent (local Ollama/clip are free)",
+    )
+    parser.add_argument(
         "--config",
         type=Path,
         default=DEFAULT_CONFIG,
@@ -173,7 +179,9 @@ def main() -> int:
                     config,
                     room_id=args.room,
                     agent_name=args.agent,
-                    dry_run=True if args.dry_run else None,
+                    dry_run=(
+                        True if args.dry_run else False if getattr(args, "execute", False) else None
+                    ),
                 )
             )
         except ValueError as exc:
