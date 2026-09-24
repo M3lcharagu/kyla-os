@@ -5,7 +5,7 @@ UI_PORT ?= 8080
 UI_DIR ?= web
 PYTHON ?= .venv/bin/python
 
-.PHONY: setup run ui clip ollama-up dry-run help
+.PHONY: setup run ui clip ollama-up dry-run ruflo-version help
 
 help:
 	@echo "Targets: setup run ui clip ollama-up dry-run"
@@ -14,7 +14,8 @@ help:
 	@echo "  make run         Interactive KYLA"
 	@echo "  make ui          Serve static UI on :$(UI_PORT)"
 	@echo "  make clip        clip_agent --help"
-	@echo "  make dry-run     Sample dry-run routing"
+	@echo "  make dry-run     Sample dry-run routing (expects ruflo default)"
+	@echo "  make ruflo-version  npx ruflo@latest --version"
 
 setup:
 	bash scripts/setup_local.sh
@@ -35,5 +36,9 @@ clip:
 	$(PYTHON) tools/clip_agent.py --help
 
 dry-run:
+	$(PYTHON) main.py --dry-run "plan my week"
 	$(PYTHON) main.py --dry-run "clip a youtube short in gula"
 	$(PYTHON) main.py --dry-run "summarize my study plan"
+
+ruflo-version:
+	npx --yes ruflo@latest --version
