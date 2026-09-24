@@ -9,26 +9,32 @@ on:
         default: R1
         type: string
       agent:
-        description: Agent adapter to select
+        description: Agent adapter
         required: true
-        default: shell
+        default: ruflo
         type: choice
         options:
+          - ruflo
+          - stack
+          - agent-reach
+          - ollama
           - shell
-          - docker-agent
-          - codex
-          - claude
-          - copilot
-          - cursor
-          - droid
+          - clip
+          - echo
+          - swarm
+          - hive
       prompt:
-        description: Prompt to send to Kyla
+        description: Prompt for KYLA
         required: true
         type: string
+
+permissions:
+  contents: read
 
 jobs:
   run-kyla:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -38,51 +44,82 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python deps
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Ensure echo fallback agent exists
+      - name: Bootstrap lightweight agent pieces
+        env:
+          AGENT: ${{ github.event.inputs.agent }}
+          KYLA_CLONE_HEAVY: '0'
         shell: bash
         run: |
+          set -euo pipefail
+          mkdir -p tools outputs
           if [[ ! -f tools/echo_agent.py ]]; then
-            mkdir -p tools
             cat > tools/echo_agent.py <<'PY'
           import sys
-
-          prompt = " ".join(sys.argv[1:])
           print("TEST AGENT ALIVE")
-          print(f"Received prompt: {prompt}")
+          print("Received prompt:", " ".join(sys.argv[1:]))
           PY
           fi
-          chmod +x tools/echo_agent.py
+          chmod +x tools/*.py || true
+          case "$AGENT" in
+            ruflo|swarm|hive)
+              echo "Warming npx ruflo (best-effort, free)…"
+              npx --yes ruflo@latest --version || echo "ruflo warm soft-failed; agent will fall through"
+              ;;
+            agent-reach)
+              if [[ -f tools/agent_reach_cli.py ]]; then
+                python tools/agent_reach_cli.py --help >/dev/null 2>&1 || true
+              else
+                echo "agent_reach_cli.py not present — will use shell fallback"
+              fi
+              ;;
+            ollama)
+              echo "Ollama not on Actions runners; agent will return install hint."
+              ;;
+          esac
 
-      - name: Run Kyla command interface
+      - name: Run KYLA (execute)
+        id: run
         env:
           ROOM: ${{ github.event.inputs.room }}
           AGENT: ${{ github.event.inputs.agent }}
           PROMPT: ${{ github.event.inputs.prompt }}
+          KYLA_CLONE_HEAVY: '0'
+          CI: '1'
+          npm_config_yes: 'true'
         shell: bash
         run: |
           set -o pipefail
-          python main.py --room "${{ github.event.inputs.room }}" --agent "${{ github.event.inputs.agent }}" "${{ github.event.inputs.prompt }}" | tee kyla-main-output.txt
-          main_status=${PIPESTATUS[0]}
-          if [[ "$main_status" -ne 0 ]]; then
-            exit "$main_status"
+          AGENT_EFF="$AGENT"
+          python main.py --execute --room "$ROOM" --agent "$AGENT_EFF" "$PROMPT" | tee kyla-reply.txt
+          status=${PIPESTATUS[0]}
+          if [[ "$status" -ne 0 ]]; then
+            echo "[NOTICE] primary agent exited $status — trying echo fallback" | tee -a kyla-reply.txt
+            python tools/echo_agent.py "$PROMPT" | tee -a kyla-reply.txt || true
           fi
+          {
+            echo "### KYLA reply"
+            echo
+            echo "- room: \`$ROOM\`"
+            echo "- agent: \`$AGENT_EFF\`"
+            echo
+            echo '```'
+            sed -n '1,200p' kyla-reply.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
-          if python - "$AGENT" <<'PY'
-          import sys
-          import yaml
-
-          selected = sys.argv[1]
-          with open("config.yaml", "r", encoding="utf-8") as config_file:
-              config = yaml.safe_load(config_file) or {}
-          command = (config.get("agents", {}).get(selected) or {}).get("command")
-          raise SystemExit(0 if command is None else 1)
-          PY
-          then
-            echo "[NOTICE] Agent '$AGENT' has command: null; using the shell agent with tools/echo_agent.py. Configure the real agent adapter on the laptop."
-            python tools/echo_agent.py "$PROMPT"
-          fi
+      - name: Upload reply artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kyla-reply
+          path: kyla-reply.txt
+          if-no-files-found: warn
