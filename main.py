@@ -4,6 +4,7 @@ KYLA command-line orchestrator.
 Examples:
     python main.py --dry-run "make a study plan"
     python main.py --agent ollama --execute "3 study tips"   # local, $0
+    python main.py --agent ruflo --execute "plan next tasks"  # always-on orchestrator
     python main.py --room R6 --execute "clip https://youtube.com/..."
     python main.py --room R4 --agent codex "build a Python API"  # only if wired
 """
@@ -89,16 +90,30 @@ def dispatch(
     if agent_name == "stack" and suite:
         command = f"python tools/stack_agent.py --suite {suite} --room {room_id}"
 
+    if agent_name in {"ruflo", "ruflow", "swarm", "hive"}:
+        mode = "swarm" if agent_name == "swarm" else "hive"
+        suite_flag = f" --suite {suite}" if suite else ""
+        room_flag = f" --room {room_id}" if room_id else ""
+        command = f"python tools/ruflo_agent.py --mode {mode}{suite_flag}{room_flag}"
+
     stack_line = ""
     try:
-        from integrations.catalog import match_prompt, format_hint
+        from integrations.catalog import match_prompt, format_hint, find
         matched = match_prompt(prompt)
         if matched:
             stack_line = format_hint(matched) + "\n"
+        elif agent_name in {"ruflo", "ruflow", "swarm", "hive"}:
+            ruflo = find("ruflo")
+            stack_line = (
+                f"[ORCHESTRATOR] ruflo always-on — python tools/ruflo_agent.py\n"
+                + (format_hint(ruflo) + "\n" if ruflo else "")
+            )
         elif suite:
             stack_line = f"[SUITE] {suite} — python tools/stack_agent.py --suite {suite}\n"
     except Exception:
-        if suite:
+        if agent_name in {"ruflo", "ruflow", "swarm", "hive"}:
+            stack_line = "[ORCHESTRATOR] ruflo always-on\n"
+        elif suite:
             stack_line = f"[SUITE] {suite}\n"
 
     header = (
