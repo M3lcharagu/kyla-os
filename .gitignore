@@ -44,3 +44,12 @@ dist/
 
 # Local runtime output
 runs/
+
+# Local runtime / media
+outputs/
+work/
+_preview/
+.cache/
+*.mp4
+*.wav
+*.webm

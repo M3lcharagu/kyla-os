@@ -1,0 +1,25 @@
+# Optional LiteLLM proxy — local-first, no paid cloud unless you add keys.
+# Start: litellm --config litellm_config.yaml --port 4000
+# Point agents at http://127.0.0.1:4000 with model "ollama/qwen2.5:3b"
+#
+# Caching cuts repeat-prompt tokens to near-zero when you re-run similar commands.
+
+model_list:
+  - model_name: ollama/qwen2.5:3b
+    litellm_params:
+      model: ollama/qwen2.5:3b
+      api_base: http://127.0.0.1:11434
+  - model_name: ollama/phi4-mini
+    litellm_params:
+      model: ollama/phi4-mini
+      api_base: http://127.0.0.1:11434
+
+litellm_settings:
+  cache: true
+  cache_params:
+    type: local
+    # Disk cache under .cache/litellm (gitignored)
+    # ttl: 3600
+
+general_settings:
+  master_key: null   # local only — do not expose this proxy to the internet
