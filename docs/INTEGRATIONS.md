@@ -1,12 +1,14 @@
 # KYLA operating stack
 
-Integrations are **first-class**. Rooms invoke a suite. Missing repos **auto-clone** into `$KYLA_STACK_DIR` (default `~/kyla-stack`). LLM stays **Ollama** — no paid APIs. **No Docker** on Catalina.
+Integrations are **first-class**. **Ruflo is the always-on orchestrator** (`runtime.default_agent: ruflo`). Rooms invoke a suite. Missing repos **auto-clone** into `$KYLA_STACK_DIR` (default `~/kyla-stack`). LLM preference stays **Ollama** for $0 — no paid APIs required. **No Docker** on Catalina.
+
+See [`docs/RUFLO.md`](RUFLO.md).
 
 ## What next on your terminal (2012 MBP / Catalina)
 
 ```bash
 cd ~/kyla-os
-git fetch origin && git checkout feat/integrations-catalog
+git fetch origin && git checkout main && git pull
 bash scripts/setup_local.sh
 source .venv/bin/activate
 brew install python@3.11 ffmpeg git || true
@@ -23,9 +25,9 @@ python tools/clip_agent.py --model tiny --dry-run "https://www.youtube.com/watch
 
 | Suite | Rooms | Tools |
 |---|---|---|
-| command | R1 | agency-agents, ollama |
-| memory | R2 | prompts, codebase-memory, ollama |
-| code | R4 | agency-agents, gitingest, context7, graft, CLI-Anything, openhands, ollama |
+| command | R1 | **ruflo**, agency-agents, ollama |
+| memory | R2 | ruflo, prompts, codebase-memory, ollama |
+| code | R4 | **ruflo**, agency-agents, gitingest, context7, graft, CLI-Anything, openhands, ollama |
 | write | R5 | prompts, mumuainovel, awesome-design-md, ollama |
 | video | R6/R7 | clip, openmontage, remotion, voicebox |
 | design | R8/R5/R4 | VoltAgent/awesome-design-md |
