@@ -1,0 +1,50 @@
+version: 1
+stack_dir_env: KYLA_STACK_DIR
+stack_dir_default: ~/kyla-stack
+llm: ollama
+credit_rule: never require paid APIs for core paths
+lazy_start: true
+
+suites:
+  command:
+    rooms: [R1]
+    tools: [agency-agents, ollama]
+  memory:
+    rooms: [R2]
+    tools: [prompts, codebase-memory, ollama]
+  code:
+    rooms: [R4]
+    tools: [agency-agents, gitingest, context7, graft, codebase-memory, cli-anything, openhands, ollama]
+  write:
+    rooms: [R5]
+    tools: [prompts, mumuainovel, awesome-design-md, ollama]
+  video:
+    rooms: [R6, R7]
+    tools: [clip, openmontage, remotion, voicebox]
+  design:
+    rooms: [R8, R5, R4]
+    tools: [awesome-design-md, ollama]
+  study:
+    rooms: [R10]
+    tools: [build-your-own-x, ollama]
+  business:
+    rooms: [R11]
+    tools: [marketingskills, freedomain, ollama]
+  research:
+    rooms: [R12]
+    tools: [context7, gitingest, ollama]
+  live:
+    rooms: [R6, R8]
+    tools: [personalive]
+
+room_defaults:
+  R1: command
+  R2: memory
+  R4: code
+  R5: write
+  R6: video
+  R7: video
+  R8: design
+  R10: study
+  R11: business
+  R12: research
