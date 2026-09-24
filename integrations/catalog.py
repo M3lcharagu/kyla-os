@@ -22,6 +22,16 @@ def load_registry(path: str | None = None) -> dict[str, Any]:
     items = data.get("integrations") or []
     if not isinstance(items, list):
         raise ValueError("REGISTRY.yaml integrations must be a list")
+    # Optional extras (TikTok stack etc.) merged by id without replacing primary
+    extra_path = target.with_name("REGISTRY_EXTRA.yaml")
+    if extra_path.is_file() and path is None:
+        with extra_path.open("r", encoding="utf-8") as fh:
+            extra = yaml.safe_load(fh) or {}
+        seen = {i.get("id") for i in items if isinstance(i, dict)}
+        for item in extra.get("integrations") or []:
+            if isinstance(item, dict) and item.get("id") not in seen:
+                items.append(item)
+                seen.add(item.get("id"))
     data["integrations"] = items
     return data
 
@@ -69,39 +79,28 @@ def find(id_or_alias: str, path: str | None = None) -> dict[str, Any] | None:
     for item in items(path):
         if str(item.get("id", "")).lower() == needle:
             return item
-        aliases = [str(item.get("name", "")).lower()]
-        aliases.extend(a.lower() for a in item.get("aliases") or [])
+        aliases = [str(a).lower() for a in (item.get("aliases") or [])]
         if needle in aliases:
             return item
     return None
 
 
-def match_prompt(text: str, path: str | None = None) -> dict[str, Any] | None:
-    normalized = (text or "").lower()
-    best: tuple[int, dict[str, Any]] | None = None
+def match_prompt(prompt: str, path: str | None = None) -> dict[str, Any] | None:
+    text = (prompt or "").strip().lower()
+    if not text:
+        return None
+    # Prefer longer alias / id matches
+    ranked: list[tuple[int, dict[str, Any]]] = []
     for item in items(path):
-        aliases = [str(item.get("id", "")), str(item.get("name", ""))]
-        aliases.extend(str(a) for a in item.get("aliases") or [])
-        for alias in aliases:
-            alias = alias.strip()
-            if not alias:
-                continue
-            if re.search(rf"(?i)(?<!\w){re.escape(alias)}(?!\w)", normalized):
-                score = len(alias)
-                if best is None or score > best[0]:
-                    best = (score, item)
-    return best[1] if best else None
-
-
-def suite_for_room(room_id: str) -> str | None:
-    mapping = (load_stack().get("room_defaults") or {})
-    return mapping.get(room_id)
-
-
-def tools_for_suite(suite: str) -> list[str]:
-    suites = load_stack().get("suites") or {}
-    row = suites.get(suite) or {}
-    return list(row.get("tools") or [])
+        keys = [str(item.get("id", ""))] + [str(a) for a in (item.get("aliases") or [])]
+        for key in keys:
+            k = key.lower().strip()
+            if k and k in text:
+                ranked.append((len(k), item))
+    if not ranked:
+        return None
+    ranked.sort(key=lambda x: x[0], reverse=True)
+    return ranked[0][1]
 
 
 def format_hint(item: dict[str, Any]) -> str:

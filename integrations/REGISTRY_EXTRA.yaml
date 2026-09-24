@@ -1,0 +1,87 @@
+version: 1
+# Merged by integrations/catalog.py with REGISTRY.yaml
+integrations:
+- id: public-apis
+  name: Public APIs (catalog)
+  repo_url: https://github.com/public-apis/public-apis
+  rooms: [R12, R1, R11, R4]
+  aliases: [public-apis, public apis, free apis, api catalog]
+  install_hint: Shallow clone OK
+  run_hint: python tools/integrations_cli.py run public-apis [query]
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: docs_url
+  install_kind: clone
+  heavy: false
+  note: Catalog of free public APIs. Shallow clone OK on Catalina.
+- id: agent-reach
+  name: Agent-Reach (free internet read/search)
+  repo_url: https://github.com/Panniantong/Agent-Reach
+  rooms: [R12, R1, R3, R11, R4]
+  aliases: [agent-reach, agent reach, reach, web research, internet search]
+  install_hint: "pip install agent-reach && agent-reach install --env=auto --safe"
+  run_hint: python tools/agent_reach_cli.py "search topic"
+  detect_bins: [agent-reach]
+  credit_impact: "local/$0 (free platform read)"
+  status: wired
+  wrapper: agent_reach
+  install_kind: pip
+  heavy: false
+  note: ALWAYS available for research/web. Lazy pip; --safe on Catalina/8GB.
+- id: awesome-llm-apps
+  name: Awesome LLM Apps (templates catalog)
+  repo_url: https://github.com/Shubhamsaboo/awesome-llm-apps
+  rooms: [R4, R1, R10, R12]
+  aliases: [awesome-llm-apps, awesome llm apps, llm apps, rag templates, agent templates]
+  install_hint: Catalog only; do NOT clone all templates by default
+  run_hint: python tools/integrations_cli.py run awesome-llm-apps [query]
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: docs_url
+  install_kind: docs
+  heavy: true
+  note: "100+ agent/RAG templates. Catalog role; heavy=true."
+- id: openviking
+  name: OpenViking (browser/advanced agent)
+  repo_url: https://github.com/volcengine/OpenViking
+  rooms: [R4, R12, R1]
+  aliases: [openviking, open viking, volcengine viking]
+  install_hint: "Lazy clone — KYLA_CLONE_HEAVY=1"
+  run_hint: python tools/integrations_cli.py run openviking
+  detect_bins: []
+  credit_impact: local/$0-unless-cloud
+  status: wired
+  wrapper: generic
+  install_kind: clone
+  heavy: true
+  note: Browser/advanced agent. Lazy clone.
+- id: awesome-harness-engineering
+  name: Awesome Harness Engineering
+  repo_url: https://github.com/ai-boost/awesome-harness-engineering
+  rooms: [R1, R4, R2, R13]
+  aliases: [awesome-harness-engineering, harness engineering, awesome harness, agent harness]
+  install_hint: Docs/catalog — shallow OK alongside Ruflo
+  run_hint: python tools/integrations_cli.py run awesome-harness-engineering
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: docs_url
+  install_kind: docs
+  heavy: false
+  note: Harness patterns for Ruflo design.
+- id: anthropic-cybersecurity-skills
+  name: Anthropic Cybersecurity Skills
+  repo_url: https://github.com/mukul975/Anthropic-Cybersecurity-Skills
+  rooms: [R13, R4, R1]
+  aliases: [anthropic-cybersecurity-skills, cybersecurity skills, cyber skills, security skills, mukul975]
+  install_hint: "npx skills add mukul975/Anthropic-Cybersecurity-Skills"
+  run_hint: python tools/integrations_cli.py run anthropic-cybersecurity-skills
+  detect_bins: [npx]
+  credit_impact: "local/$0 (skills pack)"
+  status: wired
+  wrapper: cyber_skills
+  install_kind: npx
+  heavy: false
+  note: Security skills pack. Bootstrap alongside Ruflo. R13.
