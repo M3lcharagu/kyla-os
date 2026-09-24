@@ -1,0 +1,13 @@
+/* Online / Offline badge */
+.online-badge{display:inline-flex;align-items:center;gap:.4rem;margin-left:.5rem;border:1px solid var(--line);border-radius:999px;padding:.35rem .7rem;color:var(--muted);background:rgba(255,255,255,.04);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase}
+.online-badge i{width:.42rem;height:.42rem;border-radius:50%;background:var(--subtle);box-shadow:none}
+.online-badge[data-state="online"]{border-color:rgba(154,203,138,.45);color:var(--green)}
+.online-badge[data-state="online"] i{background:var(--green);box-shadow:0 0 0 .22rem rgba(154,203,138,.15)}
+.online-badge[data-state="offline"]{border-color:rgba(232,189,121,.35);color:var(--gold)}
+.online-badge[data-state="offline"] i{background:var(--gold)}
+.online-badge[data-state="checking"] i{background:var(--cyan);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.message.pending p{opacity:.55;font-style:italic}
+.message.error p{color:#f0a0a0}
+#connect-help{margin-left:.35rem;font-size:.62rem}
+@media(max-width:760px){.online-badge span{max-width:9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
