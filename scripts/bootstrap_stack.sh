@@ -68,6 +68,38 @@ else:
 print("\nStack dir:", os.environ.get("KYLA_STACK_DIR"))
 PY
 
+
+# --- ALWAYS-ON Ruflo (not optional) ---
+echo ""
+echo "==> Ruflo always-on orchestrator (npx ruflo@latest)"
+if command -v npx >/dev/null 2>&1 && command -v node >/dev/null 2>&1; then
+  NODE_MAJOR="$(node -v 2>/dev/null | sed 's/^v//' | cut -d. -f1 || echo 0)"
+  if [[ "${NODE_MAJOR}" -lt 20 ]]; then
+    echo "    WARN: Node ${NODE_MAJOR} < 20. Ruflo prefers Node 20+."
+    echo "    Catalina: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
+    echo "             nvm install 20 && nvm use 20"
+  fi
+  mkdir -p "$KYLA_STACK_DIR/ruflo"
+  (
+    cd "$KYLA_STACK_DIR/ruflo"
+    # Non-interactive init when possible; wizard documented in docs/RUFLO.md
+    CI=1 npm_config_yes=true npx --yes ruflo@latest --version || true
+    if [[ ! -f .kyla_ruflo_inited ]]; then
+      echo "    init (non-interactive)…"
+      CI=1 npm_config_yes=true npx --yes ruflo@latest init || {
+        echo "    init returned non-zero — try wizard on Mac: npx ruflo@latest init wizard"
+      }
+      echo "ok" > .kyla_ruflo_inited
+    else
+      echo "    already inited (.kyla_ruflo_inited)"
+    fi
+  )
+  echo "    OK — KYLA default_agent=ruflo (see config.yaml / docs/RUFLO.md)"
+else
+  echo "    WARN: node/npx missing — Ruflo cannot run until Node 20+ is installed."
+  echo "    KYLA will fall through to stack_agent/ollama. Config still says ruflo is intended."
+fi
+
 echo ""
 echo "Done (lazy). Next:"
 echo "  export KYLA_STACK_DIR=$KYLA_STACK_DIR"
