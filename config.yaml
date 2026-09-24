@@ -6,7 +6,7 @@ project:
 runtime:
   default_room: R1
   # Local-first: Ollama uses zero cloud credits. Cloud agents stay command:null.
-  default_agent: ollama
+  default_agent: stack
   dry_run: true
   # Clips need longer than chat; agents can still finish faster.
   timeout_seconds: 600
@@ -17,14 +17,16 @@ rooms:
   R1:
     name: HUMANITAS Command Center
     purpose: Main command router
-    aliases: [humanitas, command center, commands, main]
-    default_agent: ollama
+    aliases: [humanitas, command center, commands, main, agency-agents, agency agents]
+    default_agent: stack
+    suite: command
 
   R2:
     name: PATIENTIA Second Brain
     purpose: Notes, memory, and personal knowledge
-    aliases: [patientia, second brain, notes, memory]
-    default_agent: ollama
+    aliases: [patientia, second brain, notes, memory, prompts, prompts.chat, awesome prompts, chatgpt prompts]
+    default_agent: stack
+    suite: memory
 
   R3:
     name: TEMPERANTIA Trading Room
@@ -35,32 +37,37 @@ rooms:
   R4:
     name: INDUSTRIA Dev Lab
     purpose: Software development
-    aliases: [industria, dev lab, coding, code, programming]
-    default_agent: ollama
+    aliases: [industria, dev lab, coding, code, programming, openhands, open hands, context7, graft, codebase-memory, codebase memory, cli-anything, cli anything, gitingest, git digest, git ingest]
+    default_agent: stack
+    suite: code
 
   R5:
     name: LUXURIA Creative Studio
     purpose: Creative ideation and writing
-    aliases: [luxuria, creative studio, writing, ideas]
-    default_agent: ollama
+    aliases: [luxuria, creative studio, writing, ideas, mumuainovel, mumu ai novel, ai novel, design-md, awesome-design-md, awesome design md, design.md]
+    default_agent: stack
+    suite: write
 
   R6:
     name: GULA Editing Suite
     purpose: Video and audio editing workflows
-    aliases: [gula, editing suite, video editing, audio editing, capcut, clip, shorts]
-    default_agent: clip
+    aliases: [gula, editing suite, video editing, audio editing, capcut, clip, shorts, openmontage, open montage, remotion, voicebox, personalive, persona live]
+    default_agent: stack
+    suite: video
 
   R7:
     name: SUPERBIA Broadcast Room
     purpose: Publishing and broadcasting
-    aliases: [superbia, broadcast, publishing, content]
-    default_agent: ollama
+    aliases: [superbia, broadcast, publishing, content, remotion, voicebox, openmontage]
+    default_agent: stack
+    suite: video
 
   R8:
     name: INVIDIA Photo Studio
     purpose: Image and photography workflows
-    aliases: [invidia, photo studio, photography, images]
-    default_agent: ollama
+    aliases: [invidia, photo studio, photography, images, design system, design-md, awesome-design-md]
+    default_agent: stack
+    suite: design
 
   R9:
     name: CARITAS Client Lounge
@@ -71,20 +78,23 @@ rooms:
   R10:
     name: HUMILITAS Study Room
     purpose: School and learning
-    aliases: [humilitas, study room, study, school, learning]
-    default_agent: ollama
+    aliases: [humilitas, study room, study, school, learning, build-your-own-x, build your own, byox, codecrafters]
+    default_agent: stack
+    suite: study
 
   R11:
     name: AVARITIA Business Ops
     purpose: Business administration
-    aliases: [avaritia, business ops, business, operations]
-    default_agent: shell
+    aliases: [avaritia, business ops, business, operations, market skills, marketingskills, corey haines, corey haynes, freedomain, free domain, digitalplat]
+    default_agent: stack
+    suite: business
 
   R12:
     name: ACEDIA Research
     purpose: General research
-    aliases: [acedia, research, investigate, sources]
-    default_agent: ollama
+    aliases: [acedia, research, investigate, sources, context7, gitingest]
+    default_agent: stack
+    suite: research
 
   R13:
     name: IRA QA & Security
@@ -141,3 +151,12 @@ agents:
   capcut:
     mode: local
     command: "python tools/clip_agent.py"
+
+  # First-class operating stack (lazy bootstrap, Ollama LLM, $0)
+  stack:
+    mode: local
+    command: "python tools/stack_agent.py --suite command"
+
+  catalog:
+    mode: local
+    command: "python tools/integrations_cli.py dispatch"
