@@ -48,7 +48,6 @@ def choose_room(text: str, config: dict[str, Any], requested: str | None) -> str
 
     normalized = text.lower()
 
-    # Prefer the first matching alias.
     for room_id, room in rooms.items():
         aliases = [room_id.lower(), room["name"].lower()]
         aliases.extend(alias.lower() for alias in room.get("aliases", []))
@@ -81,16 +80,36 @@ def dispatch(
 
     agent = config["agents"][agent_name]
     command = agent.get("command")
+    suite = room.get("suite") or ""
     runtime_dry_run = config["runtime"].get("dry_run", True)
 
     if dry_run is None:
         dry_run = runtime_dry_run
+
+    if agent_name == "stack" and suite:
+        command = f"python tools/stack_agent.py --suite {suite} --room {room_id}"
+
+    stack_line = ""
+    try:
+        from integrations.catalog import match_prompt, format_hint
+        matched = match_prompt(prompt)
+        if matched:
+            stack_line = format_hint(matched) + "\n"
+        elif suite:
+            stack_line = f"[SUITE] {suite} — python tools/stack_agent.py --suite {suite}\n"
+    except Exception:
+        if suite:
+            stack_line = f"[SUITE] {suite}\n"
 
     header = (
         f"[KYLA] {room_id} · {room['name']}\n"
         f"[AGENT] {agent_name} ({agent.get('mode', 'unknown')})\n"
         f"[PROMPT] {prompt}\n"
     )
+    if suite:
+        header += f"[SUITE] {suite}\n"
+    if stack_line:
+        header += stack_line
 
     if dry_run:
         return header + "[STATUS] Dry run; nothing executed."

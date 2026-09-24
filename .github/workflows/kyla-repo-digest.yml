@@ -1,0 +1,58 @@
+name: Kyla Repo Digest
+
+on:
+  schedule:
+    - cron: '30 7 * * *'  # 10:30 EAT, after daily brief
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repo-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
+
+      - name: Build free repo digest
+        run: |
+          set -euo pipefail
+          mkdir -p kyla/briefs
+          day="$(date -u +'%Y-%m-%d')"
+          out="kyla/briefs/repo-digest-${day}.md"
+          {
+            echo "# Kyla Repo Digest — ${day}"
+            echo
+            echo "## Recent commits (last 15)"
+            echo '```'
+            git log -15 --oneline --decorate || true
+            echo '```'
+            echo
+            echo "## Tree snapshot"
+            echo '```'
+            find . -maxdepth 2 -type d ! -path './.git*' | sort
+            echo '```'
+            echo
+            echo "## Workflow files"
+            echo '```'
+            ls -la .github/workflows/ 2>/dev/null || true
+            echo '```'
+            echo
+            echo "_Generated on GitHub Actions. No LLM API calls._"
+          } | tee "$out"
+
+      - name: Commit digest
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kyla/briefs/
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "chore: repo digest"
+            git push origin HEAD:main
+          fi
