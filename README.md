@@ -43,14 +43,31 @@ Claude, Codex, Docker, WhatsApp, or other external services to be installed.
 - `docker-agent`
 - `droid`
 - `shell`
+- `ollama` (local, wired — zero credits)
+- `clip` / `capcut` (local CapCut-style shorts — zero credits)
 
-Agents are only routing labels until their commands are configured in `config.yaml`.
+Cloud agents stay `command: null` until you opt in. Local `ollama` and `clip` are wired in `config.yaml`.
+Use `--execute` to override `runtime.dry_run: true`.
 
 ## Requirements
 
 - Python 3.10+
 - Optional: Docker Desktop
 - Optional later: WhatsApp Business Cloud API credentials
+
+## Local low-credit (recommended daily)
+
+Prefer **Ollama** + the **clip** agent so daily use spends **$0** cloud credits.
+
+```bash
+bash scripts/setup_local.sh          # Linux / Mint / macOS
+# .\scripts\setup_local.ps1         # Windows PowerShell
+ollama pull qwen2.5:3b               # or phi4-mini
+python main.py --agent ollama --execute "3 study tips"
+python tools/clip_agent.py --help
+```
+
+Details: [`docs/LOCAL_LOW_CREDIT.md`](docs/LOCAL_LOW_CREDIT.md) · [`docs/CLIP_AGENT.md`](docs/CLIP_AGENT.md) · `make help`
 
 ## Setup on Windows 11
 
@@ -61,6 +78,23 @@ py -m venv .venv
 .venv\Scripts\Activate.ps1
 
 pip install -r requirements.txt
+```
+
+## Setup on Linux / Linux Mint / macOS
+
+```bash
+cd kyla-os
+bash scripts/setup_local.sh
+source .venv/bin/activate
+```
+
+Or manually:
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+# optional video: pip install -r requirements-clip.txt
+sudo apt install ffmpeg   # Debian / Mint
 ```
 
 ## Run KYLA
