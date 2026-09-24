@@ -1,20 +1,27 @@
 name: Kyla Repo Digest
 
+# SCHEDULED 24/7 — zero Melvin. Free. No LLM.
 on:
   schedule:
-    - cron: '30 7 * * *'  # 10:30 EAT, after daily brief
+    - cron: '30 4 * * *'  # 07:30 EAT, after daily brief
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: kyla-briefs-main
+  cancel-in-progress: false
+
 jobs:
   repo-digest:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Check out
+      - name: Check out main
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 30
 
       - name: Build free repo digest
@@ -41,18 +48,36 @@ jobs:
             ls -la .github/workflows/ 2>/dev/null || true
             echo '```'
             echo
-            echo "_Generated on GitHub Actions. No LLM API calls._"
+            echo "_Generated on GitHub Actions. No LLM API calls. 24/7 scheduled — zero Melvin._"
           } | tee "$out"
 
-      - name: Commit digest
+      - name: Job summary
+        run: |
+          f="kyla/briefs/repo-digest-$(date -u +'%Y-%m-%d').md"
+          { echo "### Repo digest"; echo; [[ -f "$f" ]] && sed -n '1,120p' "$f"; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit with rebase retry (avoid cron push races)
+        env:
+          COMMIT_MSG: "chore: repo digest"
+        shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add kyla/briefs/
+          git add kyla/briefs/ || true
           if git diff --cached --quiet; then
             echo "No changes."
-          else
-            git commit -m "chore: repo digest"
-            git push origin HEAD:main
+            exit 0
           fi
+          git commit -m "${COMMIT_MSG}"
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Pushed on attempt $i"
+              exit 0
+            fi
+            echo "Push rejected (attempt $i) — rebase onto origin/main and retry"
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort || true; exit 0; }
+            sleep $((i * 2))
+          done
+          echo "Push still failing after retries — non-fatal"
