@@ -81,6 +81,50 @@ def ensure(item: dict[str, Any]) -> Path | str | None:
         return Path(__file__).resolve().parents[1] / "tools" / "clip_agent.py"
     if ident == "ollama":
         return which("ollama") or "ollama"
+    if ident == "agent-reach":
+        dest = repo_path(item)
+        dest.mkdir(parents=True, exist_ok=True)
+        ensure_pip("agent-reach")
+        exe = which("agent-reach")
+        if exe and not (dest / ".kyla_inited").is_file():
+            subprocess.run([exe, "install", "--env=auto", "--safe"], check=False)
+            (dest / ".kyla_inited").write_text("ok\n", encoding="utf-8")
+        (dest / "KYLA_POINTER.md").write_text(
+            "# Agent-Reach\n\nhttps://github.com/Panniantong/Agent-Reach\n\n"
+            "pip install agent-reach && agent-reach install --env=auto --safe\n"
+            "python tools/agent_reach_cli.py <query>\n",
+            encoding="utf-8",
+        )
+        return exe or dest
+    if ident == "anthropic-cybersecurity-skills":
+        dest = repo_path(item)
+        dest.mkdir(parents=True, exist_ok=True)
+        (dest / "KYLA_POINTER.md").write_text(
+            "# Anthropic Cybersecurity Skills\n\n"
+            "https://github.com/mukul975/Anthropic-Cybersecurity-Skills\n\n"
+            "npx skills add mukul975/Anthropic-Cybersecurity-Skills\n",
+            encoding="utf-8",
+        )
+        if which("npx"):
+            marker = dest / ".kyla_skills_added"
+            if not marker.is_file():
+                subprocess.run(
+                    ["npx", "--yes", "skills", "add", "mukul975/Anthropic-Cybersecurity-Skills"],
+                    check=False,
+                    cwd=str(dest),
+                )
+                marker.write_text("ok\n", encoding="utf-8")
+        return dest
+    if ident == "ruflo":
+        dest = repo_path(item)
+        dest.mkdir(parents=True, exist_ok=True)
+        (dest / "KYLA_POINTER.md").write_text(
+            "# Ruflo\n\nhttps://github.com/ruvnet/ruflo\n\n"
+            "Always-on KYLA orchestrator. Run: npx ruflo@latest init\n"
+            "Or: python tools/ruflo_agent.py <prompt>\n",
+            encoding="utf-8",
+        )
+        return dest
     kind = item.get("install_kind") or "clone"
     if ident == "gitingest" or kind == "pip":
         ensure_bin(item)

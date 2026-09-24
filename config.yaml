@@ -6,7 +6,7 @@ project:
 runtime:
   default_room: R1
   # Local-first: Ollama uses zero cloud credits. Cloud agents stay command:null.
-  default_agent: stack
+  default_agent: ruflo
   dry_run: true
   # Clips need longer than chat; agents can still finish faster.
   timeout_seconds: 600
@@ -17,8 +17,8 @@ rooms:
   R1:
     name: HUMANITAS Command Center
     purpose: Main command router
-    aliases: [humanitas, command center, commands, main, agency-agents, agency agents]
-    default_agent: stack
+    aliases: [humanitas, command center, commands, main, agency-agents, agency agents, ruflo, ruflow, swarm, hive, claude-flow, harness, awesome-harness]
+    default_agent: ruflo
     suite: command
 
   R2:
@@ -37,8 +37,8 @@ rooms:
   R4:
     name: INDUSTRIA Dev Lab
     purpose: Software development
-    aliases: [industria, dev lab, coding, code, programming, openhands, open hands, context7, graft, codebase-memory, codebase memory, cli-anything, cli anything, gitingest, git digest, git ingest]
-    default_agent: stack
+    aliases: [industria, dev lab, coding, code, programming, openhands, open hands, context7, graft, codebase-memory, codebase memory, cli-anything, cli anything, gitingest, git digest, git ingest, ruflo, ruflow, swarm, hive]
+    default_agent: ruflo
     suite: code
 
   R5:
@@ -52,7 +52,7 @@ rooms:
     name: GULA Editing Suite
     purpose: Video and audio editing workflows
     aliases: [gula, editing suite, video editing, audio editing, capcut, clip, shorts, openmontage, open montage, remotion, voicebox, personalive, persona live]
-    default_agent: stack
+    default_agent: clip
     suite: video
 
   R7:
@@ -92,15 +92,15 @@ rooms:
   R12:
     name: ACEDIA Research
     purpose: General research
-    aliases: [acedia, research, investigate, sources, context7, gitingest]
+    aliases: [acedia, research, investigate, sources, context7, gitingest, agent-reach, agent reach, public-apis, public apis, openviking]
     default_agent: stack
     suite: research
 
   R13:
     name: IRA QA & Security
     purpose: Testing and security
-    aliases: [ira, qa, testing, security, audit]
-    default_agent: docker-agent
+    aliases: [ira, qa, testing, security, audit, cyber skills, cybersecurity skills, anthropic-cybersecurity-skills]
+    default_agent: stack
 
   R14:
     name: CASTITAS Life OS
@@ -156,6 +156,28 @@ agents:
   stack:
     mode: local
     command: "python tools/stack_agent.py --suite command"
+
+
+  # ALWAYS-ON orchestrator (Ruflo / ruflow / claude-flow). Falls back to stack if Node missing.
+  ruflo:
+    mode: local
+    command: "python tools/ruflo_agent.py"
+
+  ruflow:
+    mode: local
+    command: "python tools/ruflo_agent.py"
+
+  swarm:
+    mode: local
+    command: "python tools/ruflo_agent.py --mode swarm"
+
+  hive:
+    mode: local
+    command: "python tools/ruflo_agent.py --mode hive"
+
+  agent-reach:
+    mode: local
+    command: "python tools/agent_reach_cli.py"
 
   catalog:
     mode: local

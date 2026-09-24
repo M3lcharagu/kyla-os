@@ -1,0 +1,89 @@
+name: Ruflo Health
+
+on:
+  schedule:
+    - cron: '30 6 * * *'  # 09:30 EAT
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ruflo-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Ruflo version / doctor (no paid keys)
+        env:
+          CI: '1'
+          npm_config_yes: 'true'
+          KYLA_STACK_DIR: ${{ github.workspace }}/kyla-stack
+        run: |
+          set -euo pipefail
+          mkdir -p kyla/briefs "$KYLA_STACK_DIR/ruflo"
+          stamp="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          out="kyla/briefs/ruflo-health-$(date -u +'%Y-%m-%d').md"
+          {
+            echo "# Ruflo Health — ${stamp}"
+            echo
+            echo "## Policy"
+            echo "- KYLA \`runtime.default_agent\` must be **ruflo** (always-on)."
+            echo "- This job never sets Anthropic/OpenAI keys."
+            echo
+            echo "## node / npx"
+            echo '```'
+            node -v
+            npx -v
+            echo '```'
+            echo
+            echo "## npx ruflo@latest --version"
+            echo '```'
+            npx --yes ruflo@latest --version || echo "(version exit $?)"
+            echo '```'
+            echo
+            echo "## doctor (best-effort)"
+            echo '```'
+            npx --yes ruflo@latest doctor || echo "(doctor exit $? — ok if unsupported)"
+            echo '```'
+            echo
+            echo "## KYLA dry-run routes to ruflo"
+            echo '```'
+            python main.py --dry-run "plan my week in humanitas" || true
+            python main.py --dry-run "refactor auth in industria" || true
+            python main.py --dry-run "clip a youtube short in gula" || true
+            echo '```'
+            echo
+            echo "## Notes"
+            echo "- Hive/swarm spawn is not executed here (would need local LLM or cloud keys)."
+            echo "- Catalina laptops: install Node 20 via nvm — see docs/RUFLO.md."
+          } | tee "$out"
+
+      - name: Commit health digest
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kyla/briefs/
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "chore: ruflo health digest"
+            git push origin HEAD:main
+          fi
