@@ -81,6 +81,17 @@ def ensure(item: dict[str, Any]) -> Path | str | None:
         return Path(__file__).resolve().parents[1] / "tools" / "clip_agent.py"
     if ident == "ollama":
         return which("ollama") or "ollama"
+    if ident == "ruflo":
+        # Always-on: pointer dir + leave real bootstrap to tools/ruflo_agent.py / bootstrap_stack.sh
+        dest = repo_path(item)
+        dest.mkdir(parents=True, exist_ok=True)
+        (dest / "KYLA_POINTER.md").write_text(
+            "# Ruflo\n\nhttps://github.com/ruvnet/ruflo\n\n"
+            "Always-on KYLA orchestrator. Run: npx ruflo@latest init\n"
+            "Or: python tools/ruflo_agent.py <prompt>\n",
+            encoding="utf-8",
+        )
+        return dest
     kind = item.get("install_kind") or "clone"
     if ident == "gitingest" or kind == "pip":
         ensure_bin(item)
