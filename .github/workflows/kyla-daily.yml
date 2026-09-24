@@ -1,21 +1,28 @@
 name: KYLA Daily News Brief
 
+# SCHEDULED 24/7 — zero Melvin. Free GitHub Actions cron.
 on:
   schedule:
-    - cron: '0 7 * * *'
+    - cron: '0 4 * * *'  # 07:00 EAT
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: kyla-briefs-main
+  cancel-in-progress: false
+
 jobs:
   daily-brief:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Check out main
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -26,26 +33,53 @@ jobs:
         working-directory: kyla
         run: npm install
 
-      - name: Generate daily brief
+      - name: Generate daily brief (soft-fail external feeds)
         working-directory: kyla
         run: |
-          set -euo pipefail
+          set -uo pipefail
           brief_date="$(date -u +'%Y-%m-%d')"
           mkdir -p briefs
           {
             printf '# KYLA Daily Brief - %s\n\n' "$brief_date"
-            node kyla-news.js
+            if ! node kyla-news.js; then
+              echo
+              echo "_Feed soft-failed (CoinDesk/Hyperliquid). Brief shell kept so cron stays green."
+            fi
           } > "briefs/${brief_date}.md"
+          # Always succeed — external RSS flakes must not kill 24/7
+          exit 0
 
-      - name: Commit and push daily brief
+      - name: Job summary
+        run: |
+          f="kyla/briefs/$(date -u +'%Y-%m-%d').md"
+          {
+            echo "### Daily brief"
+            echo
+            if [[ -f "$f" ]]; then sed -n '1,120p' "$f"; else echo "_missing_"; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit with rebase retry (avoid cron push races)
+        env:
+          COMMIT_MSG: "chore: update KYLA daily brief"
+        shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add kyla/briefs/
+          git add kyla/briefs/ || true
           if git diff --cached --quiet; then
-            echo "No daily brief changes to commit."
-          else
-            git commit -m "chore: update KYLA daily brief"
-            git push origin HEAD:main
+            echo "No changes to commit."
+            exit 0
           fi
+          git commit -m "${COMMIT_MSG}"
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Pushed on attempt $i"
+              exit 0
+            fi
+            echo "Push rejected (attempt $i) — rebase onto origin/main and retry"
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort || true; exit 0; }
+            sleep $((i * 2))
+          done
+          echo "Push still failing after retries — non-fatal"

@@ -1,0 +1,6 @@
+/* Copy to config.js (or load after config.js) when a bridge tunnel is up.
+ * Do NOT commit ephemeral tunnel URLs to main — put them in KYLA_ONLINE_HANDOFF.md.
+ */
+window.KYLA_API = "https://YOUR-TUNNEL.trycloudflare.com";
+window.KYLA_DEFAULT_AGENT = "ruflo";
+window.KYLA_DEFAULT_ROOM = "R1";
