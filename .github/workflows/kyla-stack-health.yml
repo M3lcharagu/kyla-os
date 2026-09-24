@@ -1,0 +1,71 @@
+name: Kyla Stack Health
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # 09:00 EAT
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  stack-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Dry-run routing + catalog (no paid APIs)
+        env:
+          KYLA_CLONE_HEAVY: '0'
+        run: |
+          set -euo pipefail
+          mkdir -p kyla/briefs
+          stamp="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          out="kyla/briefs/stack-health-$(date -u +'%Y-%m-%d').md"
+          {
+            echo "# Kyla Stack Health — ${stamp}"
+            echo
+            echo "## Dry-run routes (no cloud LLM)"
+            echo '```'
+            python main.py --dry-run "clip a youtube short in gula" || true
+            python main.py --dry-run "summarize my study plan" || true
+            echo '```'
+            echo
+            if [[ -f tools/integrations_cli.py ]]; then
+              echo "## Integrations catalog"
+              echo '```'
+              python tools/integrations_cli.py list || true
+              echo '```'
+            else
+              echo "_integrations_cli.py not on this branch yet_"
+            fi
+            echo
+            echo "## Honest notes"
+            echo "- Pages = static UI only."
+            echo "- Ollama / clip / whisper need Melvin's laptop (Catalina/8GB ok with KYLA_CLONE_HEAVY=0)."
+            echo "- This Action uses dry-run + catalog only; no paid API keys."
+          } | tee "$out"
+
+      - name: Commit health digest
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kyla/briefs/
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "chore: stack health digest"
+            git push origin HEAD:main
+          fi
