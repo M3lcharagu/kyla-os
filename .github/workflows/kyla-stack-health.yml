@@ -1,19 +1,28 @@
 name: Kyla Stack Health
 
+# SCHEDULED 24/7 — zero Melvin. Dry-run only; no paid APIs.
 on:
   schedule:
-    - cron: '0 6 * * *'  # 09:00 EAT
+    - cron: '0 3 * * *'  # 06:00 EAT
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: kyla-briefs-main
+  cancel-in-progress: false
+
 jobs:
   stack-health:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Check out
+      - name: Check out main
         uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -29,7 +38,7 @@ jobs:
         env:
           KYLA_CLONE_HEAVY: '0'
         run: |
-          set -euo pipefail
+          set -uo pipefail
           mkdir -p kyla/briefs
           stamp="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           out="kyla/briefs/stack-health-$(date -u +'%Y-%m-%d').md"
@@ -40,6 +49,7 @@ jobs:
             echo '```'
             python main.py --dry-run "clip a youtube short in gula" || true
             python main.py --dry-run "summarize my study plan" || true
+            python main.py --dry-run "plan my week" || true
             echo '```'
             echo
             if [[ -f tools/integrations_cli.py ]]; then
@@ -47,25 +57,42 @@ jobs:
               echo '```'
               python tools/integrations_cli.py list || true
               echo '```'
-            else
-              echo "_integrations_cli.py not on this branch yet_"
             fi
             echo
-            echo "## Honest notes"
-            echo "- Pages = static UI only."
-            echo "- Ollama / clip / whisper need Melvin's laptop (Catalina/8GB ok with KYLA_CLONE_HEAVY=0)."
+            echo "## 24/7 notes"
+            echo "- Scheduled = GitHub Actions (no Melvin laptop)."
+            echo "- Interactive room bots = online_bridge host + tunnel (see docs/ONLINE.md)."
             echo "- This Action uses dry-run + catalog only; no paid API keys."
           } | tee "$out"
+          exit 0
 
-      - name: Commit health digest
+      - name: Job summary
+        run: |
+          f="kyla/briefs/stack-health-$(date -u +'%Y-%m-%d').md"
+          { echo "### Stack health"; echo; [[ -f "$f" ]] && sed -n '1,160p' "$f"; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit with rebase retry (avoid cron push races)
+        env:
+          COMMIT_MSG: "chore: stack health digest"
+        shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add kyla/briefs/
+          git add kyla/briefs/ || true
           if git diff --cached --quiet; then
             echo "No changes."
-          else
-            git commit -m "chore: stack health digest"
-            git push origin HEAD:main
+            exit 0
           fi
+          git commit -m "${COMMIT_MSG}"
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Pushed on attempt $i"
+              exit 0
+            fi
+            echo "Push rejected (attempt $i) — rebase onto origin/main and retry"
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort || true; exit 0; }
+            sleep $((i * 2))
+          done
+          echo "Push still failing after retries — non-fatal"
