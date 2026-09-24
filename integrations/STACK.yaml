@@ -2,22 +2,24 @@ version: 1
 stack_dir_env: KYLA_STACK_DIR
 stack_dir_default: ~/kyla-stack
 llm: ollama
+orchestrator: ruflo
+orchestrator_policy: always-on; fallback stack/ollama only if Node missing
 credit_rule: never require paid APIs for core paths
 lazy_start: true
 
 suites:
   command:
     rooms: [R1]
-    tools: [agency-agents, ollama]
+    tools: [ruflo, agency-agents, ollama]
   memory:
     rooms: [R2]
-    tools: [prompts, codebase-memory, ollama]
+    tools: [ruflo, prompts, codebase-memory, ollama]
   code:
     rooms: [R4]
-    tools: [agency-agents, gitingest, context7, graft, codebase-memory, cli-anything, openhands, ollama]
+    tools: [ruflo, agency-agents, gitingest, context7, graft, codebase-memory, cli-anything, openhands, ollama]
   write:
     rooms: [R5]
-    tools: [prompts, mumuainovel, awesome-design-md, ollama]
+    tools: [ruflo, prompts, mumuainovel, awesome-design-md, ollama]
   video:
     rooms: [R6, R7]
     tools: [clip, openmontage, remotion, voicebox]
@@ -26,13 +28,13 @@ suites:
     tools: [awesome-design-md, ollama]
   study:
     rooms: [R10]
-    tools: [build-your-own-x, ollama]
+    tools: [ruflo, build-your-own-x, ollama]
   business:
     rooms: [R11]
-    tools: [marketingskills, freedomain, ollama]
+    tools: [ruflo, marketingskills, freedomain, ollama]
   research:
     rooms: [R12]
-    tools: [context7, gitingest, ollama]
+    tools: [ruflo, context7, gitingest, ollama]
   live:
     rooms: [R6, R8]
     tools: [personalive]
