@@ -70,12 +70,31 @@ if [[ -d "$CLIP_DIR/src/kyla_clip" ]]; then
   pip install -e "$CLIP_DIR" || echo "    WARN: editable install skipped"
 fi
 
+
+# Ruflo (ALWAYS-ON orchestrator — Node 20+)
+echo "==> Ruflo / Node (always-on agent harness)"
+if command -v node >/dev/null && command -v npx >/dev/null; then
+  echo "    node $(node -v) / npx OK"
+  NODE_MAJOR="$(node -v 2>/dev/null | sed 's/^v//' | cut -d. -f1 || echo 0)"
+  if [[ "${NODE_MAJOR}" -lt 20 ]]; then
+    echo "    WARN: Node ${NODE_MAJOR} < 20 — Ruflo prefers 20+."
+    echo "    macOS Catalina: install nvm then: nvm install 20 && nvm use 20"
+  fi
+  echo "    Init via: bash scripts/bootstrap_stack.sh  (runs npx ruflo@latest init)"
+else
+  echo "    Node/npx missing. Install Node 20+ then re-run bootstrap."
+  echo "    Catalina nvm:"
+  echo "      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
+  echo "      nvm install 20 && nvm use 20"
+fi
+
 mkdir -p outputs/clips
 echo ""
 echo "Done. Next:"
 echo "  source .venv/bin/activate"
 echo "  make ollama-up   # or: ollama serve && ollama pull $MODEL"
 echo "  python main.py --dry-run \"hello\""
+echo "  python main.py --agent ruflo --dry-run \"plan my week\"   # ALWAYS-ON default"
 echo "  python main.py --agent ollama --execute \"summarize my day in 3 bullets\""
 echo "  python tools/clip_agent.py --help"
-echo "See docs/LOCAL_LOW_CREDIT.md and /workspace/KYLA_LOCAL_HANDOFF.md"
+echo "See docs/RUFLO.md, docs/LOCAL_LOW_CREDIT.md, and /workspace/KYLA_LOCAL_HANDOFF.md"
