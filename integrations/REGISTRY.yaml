@@ -1,0 +1,270 @@
+version: 1
+vendor_dir: stack
+updated: '2026-09-25'
+integrations:
+- id: ollama
+  name: Ollama (local LLM)
+  repo_url: https://github.com/ollama/ollama
+  rooms: [R1, R2, R4, R5, R10, R12]
+  aliases: [ollama, local llm]
+  install_hint: https://ollama.com/download && ollama pull qwen2.5:3b
+  run_hint: python main.py --agent ollama --execute "3 study tips"
+  detect_bins: [ollama]
+  credit_impact: local/$0
+  status: wired
+  wrapper: ollama
+  install_kind: docs
+  heavy: false
+  note: Default daily chat. Zero cloud credits.
+- id: clip
+  name: KYLA clip agent (CapCut-style)
+  repo_url: https://github.com/M3lcharagu/kyla-clip
+  rooms: [R6, R7]
+  aliases: [clip, capcut, shorts, kyla-clip, auto-editor]
+  install_hint: pip install -r requirements-clip.txt; brew install ffmpeg
+  run_hint: python tools/clip_agent.py --model tiny --dry-run URL
+  detect_bins: [ffmpeg]
+  credit_impact: local/$0
+  status: wired
+  wrapper: clip
+  install_kind: pip
+  heavy: false
+  note: Local yt-dlp + faster-whisper + ffmpeg.
+- id: gitingest
+  name: GitIngest
+  repo_url: https://github.com/coderamp-labs/gitingest
+  rooms: [R4, R12]
+  aliases: [gitingest, git digest, git ingest, repo digest]
+  install_hint: pip install gitingest
+  run_hint: gitingest <url-or-path> -o digest.txt
+  detect_bins: [gitingest]
+  credit_impact: local/$0
+  status: wired
+  wrapper: gitingest
+  install_kind: pip
+  heavy: false
+  note: Best-known git/repo digest.
+- id: voicebox
+  name: Voicebox
+  repo_url: https://github.com/jamiepine/voicebox
+  rooms: [R6, R7]
+  aliases: [voicebox, tts, local voice, voice clone]
+  install_hint: Lazy/heavy — do not clone on Catalina by default
+  run_hint: Prefer clip captions; espeak/say fallback
+  detect_bins: []
+  credit_impact: local/$0-but-RAM-heavy
+  status: wired
+  wrapper: voicebox
+  install_kind: clone
+  heavy: true
+  note: Local AI voice studio. Lazy on 8GB.
+- id: remotion
+  name: Remotion
+  repo_url: https://github.com/remotion-dev/remotion
+  rooms: [R6, R7]
+  aliases: [remotion, video as code]
+  install_hint: npx create-video@latest
+  run_hint: cd my-video && npm start
+  detect_bins: [npx]
+  credit_impact: local/$0
+  status: wired
+  wrapper: remotion
+  install_kind: scaffold
+  heavy: true
+  note: Scaffold only; never clone monorepo.
+- id: openhands
+  name: OpenHands
+  repo_url: https://github.com/All-Hands-AI/OpenHands
+  rooms: [R4]
+  aliases: [openhands, open hands, all hands]
+  install_hint: No Docker on Catalina — pointer only
+  run_hint: Use Ollama + agency-agents + gitingest + context7
+  detect_bins: [openhands]
+  credit_impact: cloud-unless-Ollama
+  status: wired
+  wrapper: openhands
+  install_kind: docker
+  heavy: true
+  note: Coding agent. No Docker Desktop path.
+- id: personalive
+  name: PersonaLive
+  repo_url: https://github.com/GVCLab/PersonaLive
+  rooms: [R6, R8]
+  aliases: [personalive, persona live, talking head]
+  install_hint: GPU research — skip on 8GB
+  run_hint: https://github.com/GVCLab/PersonaLive
+  detect_bins: []
+  credit_impact: local-GPU-or-skip
+  status: wired
+  wrapper: generic
+  install_kind: docs
+  heavy: true
+  note: Talking-head / live portrait. Lazy.
+- id: mumuainovel
+  name: MuMuAINovel
+  repo_url: https://github.com/xiamuceer-j/MuMuAINovel
+  rooms: [R5]
+  aliases: [mumuainovel, mumu ai novel, ai novel]
+  install_hint: Lazy clone; prefer Ollama writing
+  run_hint: Default writing stays Ollama in R5
+  detect_bins: []
+  credit_impact: cloud-unless-Ollama
+  status: wired
+  wrapper: generic
+  install_kind: clone
+  heavy: true
+  note: AI novel assistant.
+- id: marketingskills
+  name: Marketing Skills (Corey Haines)
+  repo_url: https://github.com/coreyhaines31/marketingskills
+  rooms: [R11, R7]
+  aliases: [market skills, marketingskills, corey haines, corey haynes]
+  install_hint: bash scripts/install_integration.sh marketingskills
+  run_hint: python tools/integrations_cli.py run marketingskills
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: skills_clone
+  install_kind: clone
+  heavy: false
+  note: CRO/SEO/copy skills (Corey Haines).
+- id: build-your-own-x
+  name: Build Your Own X
+  repo_url: https://github.com/codecrafters-io/build-your-own-x
+  rooms: [R10, R4]
+  aliases: [build-your-own-x, build your own, byox, codecrafters]
+  install_hint: Open GitHub README / optional shallow clone
+  run_hint: Browse tutorial list
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: docs_url
+  install_kind: docs
+  heavy: false
+  note: Tutorial index.
+- id: cli-anything
+  name: CLI-Anything
+  repo_url: https://github.com/HKUDS/CLI-Anything
+  rooms: [R4]
+  aliases: [cli-anything, cli anything, clianything]
+  install_hint: Lazy; do not vendor into default install
+  run_hint: https://github.com/HKUDS/CLI-Anything
+  detect_bins: []
+  credit_impact: local/$0-unless-cloud-agents
+  status: wired
+  wrapper: docs_url
+  install_kind: clone
+  heavy: true
+  note: Agent-native CLI hub.
+- id: freedomain
+  name: DigitalPlat FreeDomain
+  repo_url: https://github.com/DigitalPlatDev/FreeDomain
+  rooms: [R11]
+  aliases: [freedomain, free domain, digitalplat, us.kg]
+  install_hint: Docs only — register on DigitalPlat site
+  run_hint: Open repo README
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: docs_url
+  install_kind: docs
+  heavy: false
+  note: Free domain + DNS docs.
+- id: agency-agents
+  name: Agency Agents
+  repo_url: https://github.com/msitarzewski/agency-agents
+  rooms: [R1, R9, R11]
+  aliases: [agency-agents, agency agents, agency agent]
+  install_hint: bash scripts/install_integration.sh agency-agents
+  run_hint: python tools/integrations_cli.py run agency-agents [query]
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: agency_agents
+  install_kind: clone
+  heavy: false
+  note: Markdown agent personas.
+- id: graft
+  name: Graft (code graph MCP)
+  repo_url: https://github.com/trailhq/Graft
+  rooms: [R4]
+  aliases: [graft, code graph, mcp code graph]
+  install_hint: Optional CLI per trailhq/Graft
+  run_hint: graft init if installed
+  detect_bins: [graft]
+  credit_impact: local/$0
+  status: wired
+  wrapper: generic
+  install_kind: docs
+  heavy: false
+  note: Code graph MCP for coding agents.
+- id: codebase-memory
+  name: Codebase Memory MCP
+  repo_url: https://github.com/DeusData/codebase-memory-mcp
+  rooms: [R4, R2]
+  aliases: [codebase-memory, codebase memory, codebase memory mcp]
+  install_hint: Download release binary if needed
+  run_hint: cbm install if binary present
+  detect_bins: [cbm, codebase-memory-mcp]
+  credit_impact: local/$0
+  status: wired
+  wrapper: generic
+  install_kind: docs
+  heavy: false
+  note: Code knowledge-graph MCP.
+- id: openmontage
+  name: OpenMontage
+  repo_url: https://github.com/calesthio/OpenMontage
+  rooms: [R6, R7]
+  aliases: [openmontage, open montage, agentic video, agentic editor]
+  install_hint: Heavy — KYLA_CLONE_HEAVY=1 only
+  run_hint: Daily path stays clip_agent
+  detect_bins: []
+  credit_impact: local/$0-if-no-keys
+  status: wired
+  wrapper: openmontage
+  install_kind: clone
+  heavy: true
+  note: Agentic video; lazy beside clip.
+- id: context7
+  name: Context7
+  repo_url: https://github.com/upstash/context7
+  rooms: [R4, R12]
+  aliases: [context7, ctx7]
+  install_hint: npx ctx7 setup or browse context7.com
+  run_hint: python tools/integrations_cli.py run context7 next.js
+  detect_bins: [ctx7]
+  credit_impact: local/$0-docs
+  status: wired
+  wrapper: context7
+  install_kind: npx
+  heavy: false
+  note: Up-to-date library docs for LLMs.
+- id: prompts
+  name: prompts.chat
+  repo_url: https://github.com/f/prompts.chat
+  rooms: [R2, R5]
+  aliases: [prompts, prompts.chat, awesome-chatgpt-prompts, awesome prompts, chatgpt prompts]
+  install_hint: Open https://prompts.chat
+  run_hint: python tools/integrations_cli.py run prompts [query]
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: prompts
+  install_kind: docs
+  heavy: false
+  note: f.k.a. awesome-chatgpt-prompts.
+- id: awesome-design-md
+  name: Awesome DESIGN.md
+  repo_url: https://github.com/VoltAgent/awesome-design-md
+  rooms: [R5, R8, R4]
+  aliases: [awesome-design-md, awesome design md, design-md, design.md, design md]
+  install_hint: bash scripts/install_integration.sh awesome-design-md
+  run_hint: python tools/integrations_cli.py run awesome-design-md linear
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: design_md
+  install_kind: clone
+  heavy: false
+  note: VoltAgent DESIGN.md brand packs for UI agents.
