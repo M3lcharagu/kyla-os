@@ -10,13 +10,13 @@ lazy_start: true
 suites:
   command:
     rooms: [R1]
-    tools: [ruflo, agency-agents, ollama]
+    tools: [ruflo, agency-agents, awesome-harness-engineering, agent-reach, ollama]
   memory:
     rooms: [R2]
-    tools: [ruflo, prompts, codebase-memory, ollama]
+    tools: [ruflo, prompts, codebase-memory, awesome-harness-engineering, ollama]
   code:
     rooms: [R4]
-    tools: [ruflo, agency-agents, gitingest, context7, graft, codebase-memory, cli-anything, openhands, ollama]
+    tools: [ruflo, agency-agents, gitingest, context7, graft, codebase-memory, cli-anything, openhands, awesome-llm-apps, openviking, ollama]
   write:
     rooms: [R5]
     tools: [ruflo, prompts, mumuainovel, awesome-design-md, ollama]
@@ -28,13 +28,16 @@ suites:
     tools: [awesome-design-md, ollama]
   study:
     rooms: [R10]
-    tools: [ruflo, build-your-own-x, ollama]
+    tools: [ruflo, build-your-own-x, awesome-llm-apps, ollama]
   business:
     rooms: [R11]
-    tools: [ruflo, marketingskills, freedomain, ollama]
+    tools: [ruflo, marketingskills, freedomain, public-apis, agent-reach, ollama]
   research:
     rooms: [R12]
-    tools: [ruflo, context7, gitingest, ollama]
+    tools: [ruflo, agent-reach, public-apis, context7, gitingest, openviking, ollama]
+  security:
+    rooms: [R13]
+    tools: [anthropic-cybersecurity-skills, awesome-harness-engineering, ruflo]
   live:
     rooms: [R6, R8]
     tools: [personalive]
@@ -50,3 +53,4 @@ room_defaults:
   R10: study
   R11: business
   R12: research
+  R13: security

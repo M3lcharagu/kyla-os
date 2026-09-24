@@ -1,6 +1,7 @@
 /**
  * KYLA room → agent map for penthouse / command-center UI.
- * Ruflo is ALWAYS-ON for R1 (command) and R4 (code). R6 stays clip.
+ * Ruflo ALWAYS-ON R1/R4. Agent-Reach LIVE R12. Cyber skills R13. R6 stays clip.
+ * (online_bridge / live reply wiring lives on feat/online-ops — merge after this stack.)
  */
 (function (root) {
   const rooms = [
@@ -15,8 +16,8 @@
     { id: 'R9', name: 'CARITAS', label: 'Client Lounge', agent: 'ollama', status: 'ready', suite: null },
     { id: 'R10', name: 'HUMILITAS', label: 'Study Room', agent: 'stack', status: 'ready', suite: 'study' },
     { id: 'R11', name: 'AVARITIA', label: 'Business Ops', agent: 'stack', status: 'ready', suite: 'business' },
-    { id: 'R12', name: 'ACEDIA', label: 'Research & Intelligence', agent: 'stack', status: 'ready', suite: 'research' },
-    { id: 'R13', name: 'IRA', label: 'QA & Security', agent: 'docker-agent', status: 'pointer', suite: null },
+    { id: 'R12', name: 'ACEDIA', label: 'Research & Intelligence', agent: 'agent-reach', status: 'live', suite: 'research' },
+    { id: 'R13', name: 'IRA', label: 'QA & Security', agent: 'cyber-skills', status: 'live', suite: 'security' },
     { id: 'R14', name: 'CASTITAS', label: 'Life OS', agent: 'shell', status: 'ready', suite: null },
   ];
 
@@ -24,7 +25,7 @@
     id: 'ruflo',
     aliases: ['ruflo', 'ruflow', 'claude-flow', 'swarm', 'hive'],
     policy: 'always-on',
-    liveRooms: ['R1', 'R4'],
+    liveRooms: ['R1', 'R4', 'R12', 'R13'],
     note: 'Default agent orchestration path. Falls back to stack/ollama only if Node missing.',
   };
 
@@ -39,6 +40,12 @@
     }
     if (room.agent === 'clip') {
       return `Clip LIVE · ${room.id} video path (openmontage lazy).`;
+    }
+    if (room.agent === 'agent-reach') {
+      return `Agent-Reach LIVE · ${room.id} research/web (free platforms).`;
+    }
+    if (room.agent === 'cyber-skills') {
+      return `Cyber Skills LIVE · ${room.id} (npx skills pack).`;
     }
     return `${room.agent} · ${room.status} · ${room.label}`;
   }
