@@ -49,11 +49,42 @@ Claude, Codex, Docker, WhatsApp, or other external services to be installed.
 Cloud agents stay `command: null` until you opt in. Local `ollama` and `clip` are wired in `config.yaml`.
 Use `--execute` to override `runtime.dry_run: true`.
 
+## Backend: Supabase (default, free tier)
+
+KYLA's default backend for **database + logins** is [Supabase](https://supabase.com) (free tier).
+It is default-on but lazy: with no keys set, the web UI stores history in `localStorage` and
+Actions keep writing markdown files — nothing breaks before the project exists.
+
+- **Web UI** (`web/supabase.js`): magic-link email login, signed-in state in the top bar,
+  chats / tasks / agent runs sync to Supabase; `supabase-js` loads from a CDN only once
+  configured (no build step).
+- **Bridge + Actions** (`tools/supabase_sink.py`, stdlib only): write `agent_runs` and
+  `news_briefs`; no-op when `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` are missing.
+- **Schema + RLS**: [`supabase/migrations/0001_kyla_core.sql`](supabase/migrations/0001_kyla_core.sql)
+  (profiles, agent_runs, chat_messages, tasks, memories, store_leads, news_briefs; owner-only policies).
+- **Keep-alive**: `.github/workflows/supabase-keepalive.yml` pings twice a week.
+
+Setup (3 values):
+
+| Value | Goes to |
+|---|---|
+| Project URL | GitHub secret `SUPABASE_URL` **and** `web/config.js` → `KYLA_SUPABASE_URL` |
+| anon / publishable key (public-safe) | `web/config.js` → `KYLA_SUPABASE_ANON_KEY` (or the UI account panel) |
+| service_role / secret key (private) | GitHub secret `SUPABASE_SERVICE_ROLE_KEY` (+ `.env` on the bridge host) — never in `web/` |
+
+**Free-tier limits (honest):** 50,000 monthly active users, 500 MB database, and
+**free projects pause after about 1 week of inactivity** — the daily Actions writes plus the
+keep-alive workflow keep it active; if it pauses, restore it from the dashboard.
+Built-in auth email is limited to about 2 emails/hour.
+
+Full steps: [`supabase/README.md`](supabase/README.md).
+
 ## Requirements
 
 - Python 3.10+
 - Optional: Docker Desktop
 - Optional later: WhatsApp Business Cloud API credentials
+- Optional: a free Supabase project (database + logins) — see `supabase/README.md`
 
 ## Local low-credit (recommended daily)
 
