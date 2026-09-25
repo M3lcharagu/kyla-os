@@ -4,16 +4,18 @@ stack_dir_default: ~/kyla-stack
 llm: ollama
 orchestrator: ruflo
 orchestrator_policy: always-on; fallback stack/ollama only if Node missing
+backend: supabase
+backend_policy: default-on + lazy; no-op (localStorage / files) when SUPABASE_* keys are missing
 credit_rule: never require paid APIs for core paths
 lazy_start: true
 
 suites:
   command:
     rooms: [R1]
-    tools: [ruflo, agency-agents, awesome-harness-engineering, agent-reach, ollama]
+    tools: [ruflo, supabase, agency-agents, awesome-harness-engineering, agent-reach, ollama]
   memory:
     rooms: [R2]
-    tools: [ruflo, prompts, codebase-memory, awesome-harness-engineering, ollama]
+    tools: [ruflo, supabase, prompts, codebase-memory, awesome-harness-engineering, ollama]
   code:
     rooms: [R4]
     tools: [ruflo, agency-agents, gitingest, context7, graft, codebase-memory, cli-anything, openhands, awesome-llm-apps, openviking, ollama]
@@ -31,7 +33,7 @@ suites:
     tools: [ruflo, build-your-own-x, awesome-llm-apps, ollama]
   business:
     rooms: [R11]
-    tools: [ruflo, marketingskills, freedomain, public-apis, agent-reach, ollama]
+    tools: [ruflo, supabase, marketingskills, freedomain, public-apis, agent-reach, ollama]
   research:
     rooms: [R12]
     tools: [ruflo, agent-reach, public-apis, context7, gitingest, openviking, ollama]

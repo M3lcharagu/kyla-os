@@ -30,6 +30,20 @@ integrations:
   install_kind: docs
   heavy: false
   note: Default daily chat. Zero cloud credits.
+- id: supabase
+  name: Supabase (default backend — database + logins)
+  repo_url: "https://github.com/supabase/supabase"
+  rooms: [R1, R2, R3, R11, R14]
+  aliases: [supabase, kyla-db, kyla cloud, supabase backend]
+  install_hint: "Free project at supabase.com → run supabase/migrations/0001_kyla_core.sql → set SUPABASE_URL + keys (see supabase/README.md)"
+  run_hint: python tools/integrations_cli.py run supabase ping
+  detect_bins: []
+  credit_impact: "free tier/$0 (50k MAU, 500 MB DB; pauses after ~1 week idle)"
+  status: wired
+  wrapper: supabase
+  install_kind: service
+  heavy: false
+  note: "DEFAULT backend (default-on, lazy). Web: supabase-js from CDN only when URL + anon key are set; magic-link login; chats/tasks/runs sync, else localStorage. Server: tools/supabase_sink.py (stdlib REST) writes agent_runs + news_briefs with SUPABASE_SERVICE_ROLE_KEY; silent no-op when env is missing. Never clone the supabase repo; no Docker."
 - id: clip
   name: KYLA clip agent (CapCut-style)
   repo_url: "https://github.com/M3lcharagu/kyla-clip"

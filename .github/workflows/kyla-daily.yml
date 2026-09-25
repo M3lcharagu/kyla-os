@@ -49,6 +49,18 @@ jobs:
           # Always succeed — external RSS flakes must not kill 24/7
           exit 0
 
+      - name: Save brief to Supabase (no-op without secrets)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        shell: bash
+        run: |
+          d="$(date -u +'%Y-%m-%d')"
+          f="kyla/briefs/${d}.md"
+          st=ok; grep -q 'soft-failed' "$f" 2>/dev/null && st=error
+          python3 tools/supabase_sink.py brief --date "$d" --file "$f" --source actions/kyla-daily || true
+          python3 tools/supabase_sink.py run --agent kyla-daily --status "$st" --input "daily news brief ${d}" --output-file "$f" --source actions || true
+
       - name: Job summary
         run: |
           f="kyla/briefs/$(date -u +'%Y-%m-%d').md"

@@ -1,4 +1,4 @@
-"""Extra KYLA wrappers: ruflo, agent-reach, cyber_skills."""
+"""Extra KYLA wrappers: ruflo, agent-reach, cyber_skills, supabase."""
 from __future__ import annotations
 
 import subprocess
@@ -43,7 +43,26 @@ def run_ruflo(item: dict[str, Any], args: list[str], print_header) -> int:
     ).returncode
 
 
+def run_supabase(item: dict[str, Any], args: list[str], print_header) -> int:
+    """Status / ping for the default Supabase backend. Always exits 0 (soft)."""
+    print_header(item)
+    sys.path.insert(0, str(ROOT / "tools"))
+    try:
+        import supabase_sink as sb
+    except Exception as exc:  # noqa: BLE001
+        print(f"[supabase] helper unavailable: {exc}")
+        return 0
+    info = sb.status()
+    print(f"[supabase] configured={info['configured']} url={info['url']} key={info['key']}")
+    if not info["configured"]:
+        print("[supabase] not configured — KYLA runs in local mode. Setup: supabase/README.md")
+        return 0
+    print("[supabase] ping ok" if sb.ping() else "[supabase] ping failed (paused project? see supabase/README.md)")
+    return 0
+
+
 def install(wrappers: dict, print_header) -> None:
     wrappers["ruflo"] = lambda item, args: run_ruflo(item, args, print_header)
     wrappers["agent_reach"] = lambda item, args: run_agent_reach(item, args, print_header)
     wrappers["cyber_skills"] = lambda item, args: run_cyber_skills(item, args, print_header)
+    wrappers["supabase"] = lambda item, args: run_supabase(item, args, print_header)

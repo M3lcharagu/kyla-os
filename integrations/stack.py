@@ -77,6 +77,9 @@ def ensure_bin(item: dict[str, Any]) -> str | None:
 def ensure(item: dict[str, Any]) -> Path | str | None:
     """Bootstrap whatever this tool needs so KYLA can operate."""
     ident = item.get("id")
+    if ident == "supabase":
+        # Hosted service: nothing to clone or install. Schema lives in ./supabase.
+        return Path(__file__).resolve().parents[1] / "supabase"
     if ident == "clip":
         return Path(__file__).resolve().parents[1] / "tools" / "clip_agent.py"
     if ident == "ollama":

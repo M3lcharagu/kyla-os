@@ -16,6 +16,13 @@ from integrations.stack import ensure, repo_path  # noqa: E402
 
 
 def _present(item) -> str:
+    if item.get("id") == "supabase":
+        try:
+            sys.path.insert(0, str(ROOT / "tools"))
+            import supabase_sink
+            return "yes" if supabase_sink.configured() else "no"
+        except Exception:  # noqa: BLE001
+            return "no"
     dest = repo_path(item)
     if dest.is_dir() and any(dest.iterdir()):
         return "yes"
