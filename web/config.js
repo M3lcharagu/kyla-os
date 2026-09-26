@@ -13,5 +13,5 @@ window.KYLA_DEFAULT_ROOM = window.KYLA_DEFAULT_ROOM || "R1";
  * NEVER put the service_role / sb_secret_ key here. You can also set these from the
  * Account panel in the UI (stored in this browser only). See supabase/README.md.
  */
-window.KYLA_SUPABASE_URL = window.KYLA_SUPABASE_URL || "";
-window.KYLA_SUPABASE_ANON_KEY = window.KYLA_SUPABASE_ANON_KEY || "";
+window.KYLA_SUPABASE_URL = window.KYLA_SUPABASE_URL || "https://vojcedpmwhpjlhhnexjn.supabase.co";
+window.KYLA_SUPABASE_ANON_KEY = window.KYLA_SUPABASE_ANON_KEY || "sb_publishable_mBLRmkmplFcaULbmDLZp3g_5JN2p18i"; // publishable key (public)
