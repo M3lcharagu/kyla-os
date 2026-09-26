@@ -5,7 +5,7 @@ UI_PORT ?= 8080
 UI_DIR ?= web
 PYTHON ?= .venv/bin/python
 
-.PHONY: setup run ui clip ollama-up dry-run ruflo-version online-bridge online-tunnel online help
+.PHONY: setup run ui clip ollama-up dry-run ruflo-version online-bridge online-tunnel online supabase-status help
 
 help:
 	@echo "Targets: setup run ui clip ollama-up dry-run online-bridge online-tunnel"
@@ -18,6 +18,7 @@ help:
 	@echo "  make ruflo-version  npx ruflo@latest --version"
 	@echo "  make online-bridge  Start interactive API on :8787"
 	@echo "  make online-tunnel  cloudflared tunnel to :8787"
+	@echo "  make supabase-status  Supabase backend status + ping (no-op without keys)"
 
 setup:
 	bash scripts/setup_local.sh
@@ -54,3 +55,7 @@ online-tunnel:
 
 online:
 	@sed -n '1,40p' docs/ONLINE.md
+
+supabase-status:
+	python3 tools/supabase_sink.py status
+	python3 tools/supabase_sink.py ping

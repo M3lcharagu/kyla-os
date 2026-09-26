@@ -11,3 +11,31 @@
 .message.error p{color:#f0a0a0}
 #connect-help{margin-left:.35rem;font-size:.62rem}
 @media(max-width:760px){.online-badge span{max-width:9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+
+/* Account / Supabase sync */
+.account-badge{display:inline-flex;align-items:center;gap:.4rem;margin-left:.35rem;border:1px solid var(--line);border-radius:999px;padding:.35rem .7rem;color:var(--muted);background:rgba(255,255,255,.04);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase}
+.account-badge i{width:.42rem;height:.42rem;border-radius:50%;background:var(--subtle)}
+.account-badge[data-state="ready"]{border-color:rgba(117,216,228,.35);color:var(--cyan)}
+.account-badge[data-state="ready"] i{background:var(--cyan)}
+.account-badge[data-state="cloud"]{border-color:rgba(154,203,138,.45);color:var(--green)}
+.account-badge[data-state="cloud"] i{background:var(--green);box-shadow:0 0 0 .22rem rgba(154,203,138,.15)}
+.account-panel{position:fixed;top:4.6rem;right:max(.7rem,calc((100% - var(--max))/2));z-index:30;width:min(24rem,calc(100% - 1.4rem));max-height:calc(100vh - 5.5rem);overflow:auto;padding:1.1rem;background:rgba(20,21,28,.97)}
+.account-panel[hidden]{display:none}
+.account-panel .panel-head .icon-button{margin-left:auto}
+.account-status,.account-msg{margin:.9rem 0 0;color:var(--muted);font-size:.74rem;line-height:1.5}
+.account-msg:empty{display:none}
+.account-form{margin-top:.9rem}
+.account-form label,.account-settings label{display:block;margin:.7rem 0 .35rem;color:var(--subtle);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase}
+.account-form p{margin:0 0 .6rem;color:var(--muted);font-size:.76rem}
+.account-panel input{box-sizing:border-box;border:1px solid var(--line);border-radius:.6rem;padding:.6rem .7rem;background:rgba(255,255,255,.04)}
+.account-row{display:flex;gap:.5rem;align-items:center;margin-top:.5rem}
+.account-action{flex:0 0 auto;border:1px solid var(--gold);border-radius:999px;padding:.55rem .9rem;color:var(--night);background:var(--gold);font-size:.7rem;font-weight:700}
+.account-action.ghost{color:var(--ink);background:transparent;border-color:var(--line)}
+.account-settings{margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--line)}
+.account-settings summary{color:var(--gold);font-size:.72rem;cursor:pointer}
+.account-settings .note{display:block;margin-top:.6rem;text-transform:none;letter-spacing:.02em}
+.account-runs{margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--line)}
+.account-runs ol{margin:.4rem 0 0;padding-left:1.1rem;color:var(--muted);font-size:.7rem;line-height:1.7}
+.account-runs .note{margin-top:.5rem;text-transform:none;letter-spacing:.02em}
+.account-row input{flex:1 1 auto;min-width:0}
+@media(max-width:760px){.topbar{gap:.45rem}.online-badge{margin-left:auto}.online-badge span{max-width:6.5rem}.account-badge{padding:.45rem;margin-left:0}#connect-help{margin-left:0}.account-badge span{display:none}.account-panel{top:4rem}}

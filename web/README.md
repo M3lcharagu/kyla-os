@@ -26,8 +26,16 @@ The visual-lab scene is intentionally dependency-free. Add an Astra embed URL to
 
 Open `web/index.html` directly for the static preview, or run any simple static server from the `web` directory, for example `python3 -m http.server 8080`.
 
+## Supabase login + sync (optional)
+
+`supabase.js` adds magic-link login and cloud sync. Set `KYLA_SUPABASE_URL` and
+`KYLA_SUPABASE_ANON_KEY` in `config.js` (anon / publishable key only — public-safe), or paste
+them into the account panel (top-right badge → *Supabase settings*). Without them the UI stays
+in local mode and loads nothing extra. `supabase-js` comes from jsDelivr (esm.sh fallback) via
+dynamic `import()`, so there is still no build step. See `../supabase/README.md`.
+
 ## Notes
 
 - Weather is a lightweight local mock that rotates a few Nairobi-friendly states by day; no API key or network request is required.
-- Agent cards and chat are interaction placeholders ready to connect to real services later.
+- Chat talks to the online bridge when `?api=` / `KYLA_API` is set; history persists to Supabase when signed in, else `localStorage`.
 - All visuals are CSS and inline text; no framework, package manager, or protected character artwork is used.

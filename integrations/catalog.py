@@ -103,6 +103,17 @@ def match_prompt(prompt: str, path: str | None = None) -> dict[str, Any] | None:
     return ranked[0][1]
 
 
+def suite_for_room(room_id: str) -> str:
+    """Room -> suite from STACK.yaml room_defaults (used by tools/stack_agent.py)."""
+    return str((load_stack().get("room_defaults") or {}).get((room_id or "").strip().upper(), "") or "")
+
+
+def tools_for_suite(suite: str) -> list[str]:
+    """Suite -> tool ids from STACK.yaml suites (used by tools/stack_agent.py)."""
+    entry = (load_stack().get("suites") or {}).get((suite or "").strip()) or {}
+    return [str(t) for t in (entry.get("tools") or [])]
+
+
 def format_hint(item: dict[str, Any]) -> str:
     rooms = ",".join(item.get("rooms") or [])
     return (

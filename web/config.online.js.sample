@@ -4,3 +4,6 @@
 window.KYLA_API = "https://YOUR-TUNNEL.trycloudflare.com";
 window.KYLA_DEFAULT_AGENT = "ruflo";
 window.KYLA_DEFAULT_ROOM = "R1";
+// Optional Supabase cloud sync (public anon / publishable key only — never the service_role / secret key):
+// window.KYLA_SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
+// window.KYLA_SUPABASE_ANON_KEY = "sb_publishable_... or anon key";

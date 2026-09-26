@@ -117,6 +117,21 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Log run to Supabase (no-op without secrets)
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ROOM: ${{ github.event.inputs.room }}
+          AGENT: ${{ github.event.inputs.agent }}
+          PROMPT: ${{ github.event.inputs.prompt }}
+          RUN_OUTCOME: ${{ steps.run.outcome }}
+        shell: bash
+        run: |
+          st=ok; [[ "$RUN_OUTCOME" == "success" ]] || st=error
+          python tools/supabase_sink.py run --agent "$AGENT" --room "$ROOM" --status "$st" \
+            --input "$PROMPT" --output-file kyla-reply.txt --source actions/kyla-run || true
+
       - name: Upload reply artifact
         uses: actions/upload-artifact@v4
         with:

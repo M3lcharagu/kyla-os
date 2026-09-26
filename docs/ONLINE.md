@@ -59,6 +59,12 @@ Endpoints:
 
 CORS is open for `*.github.io` and localhost.
 
+**Supabase run log (optional):** if `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are in the
+bridge's environment (or a root `.env`), every `/v1/run` is written to `agent_runs`
+(source `bridge`) in a background thread. `GET /v1/health` reports `"supabase": true|false`.
+When the phone is signed in, the browser logs the run itself and the bridge skips its copy.
+See [`supabase/README.md`](../supabase/README.md).
+
 **Do not commit ephemeral tunnel URLs to `main`.** Put them in `/workspace/KYLA_ONLINE_HANDOFF.md` (or your notes). Sample: `web/config.online.js.sample`.
 
 ### Host progression (still free)

@@ -14,6 +14,27 @@ TIMEOUT = int(os.environ.get("KYLA_BRIDGE_TIMEOUT", "180"))
 STARTED = time.time()
 ALLOWED = {"ruflo","ruflow","swarm","hive","stack","agent-reach","agent_reach","ollama","shell","clip","echo"}
 
+# Optional Supabase sink (default-on, no-op without SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY).
+sys.path.insert(0, str(ROOT / "tools"))
+try:
+    import supabase_sink as _sb
+except Exception:  # noqa: BLE001 — never let persistence break the bridge
+    _sb = None
+
+def _sb_on():
+    try: return bool(_sb and _sb.configured())
+    except Exception: return False
+
+def _sb_log(result, prompt, started_iso):
+    """Fire-and-forget agent_runs row (source=bridge). Skipped when the web client already logged it."""
+    if not _sb_on(): return
+    try:
+        _sb.log_run_async(agent=result.get("agent") or DEFAULT_AGENT, room=result.get("room"),
+                          status="ok" if result.get("ok") else "error", input=prompt, output=result.get("reply"),
+                          source="bridge", started_at=started_iso,
+                          meta={"ms": result.get("ms"), "exit_code": result.get("exit_code")})
+    except Exception: pass
+
 def _cors(h):
     o = h.headers.get("Origin", "*") or "*"
     allow = o if (o.endswith(".github.io") or o.startswith("http://localhost") or o.startswith("http://127.0.0.1") or o=="null") else "*"
@@ -79,7 +100,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path.rstrip("/") or "/"
         if path in {"/", "/v1/health"}:
-            _send(self, 200, {"ok": True, "service": "kyla-online-bridge", "uptime_s": int(time.time()-STARTED), "default_agent": DEFAULT_AGENT, "hint": "POST /v1/run {room,agent,prompt}"}); return
+            _send(self, 200, {"ok": True, "service": "kyla-online-bridge", "uptime_s": int(time.time()-STARTED), "default_agent": DEFAULT_AGENT, "supabase": _sb_on(), "hint": "POST /v1/run {room,agent,prompt}"}); return
         if path == "/v1/stack": _send(self, 200, stack_snapshot()); return
         _send(self, 404, {"ok": False, "error": "not found"})
     def do_POST(self):
@@ -92,7 +113,11 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, json.JSONDecodeError) as exc:
             _send(self, 400, {"ok": False, "error": str(exc), "reply": ""}); return
         try:
-            _send(self, 200, run_agent(str(data.get("room") or "R1"), str(data.get("agent") or DEFAULT_AGENT), str(data.get("prompt") or "")))
+            started = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            prompt = str(data.get("prompt") or "")
+            result = run_agent(str(data.get("room") or "R1"), str(data.get("agent") or DEFAULT_AGENT), prompt)
+            _send(self, 200, result)
+            if prompt.strip() and not data.get("logged_by_client"): _sb_log(result, prompt, started)
         except Exception as exc:
             _send(self, 500, {"ok": False, "error": str(exc), "reply": traceback.format_exc()[-800:]})
 
@@ -101,6 +126,7 @@ def main():
     print(f"[KYLA online bridge] http://{HOST}:{PORT}  default_agent={DEFAULT_AGENT}", flush=True)
     print("  GET /v1/health  GET /v1/stack  POST /v1/run", flush=True)
     print(f"  Tunnel: cloudflared tunnel --url http://127.0.0.1:{PORT}", flush=True)
+    print(f"  Supabase run log: {'on' if _sb_on() else 'off (set SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY)'}", flush=True)
     try: srv.serve_forever()
     except KeyboardInterrupt: print("\n[bridge] stop", flush=True); srv.shutdown()
     return 0

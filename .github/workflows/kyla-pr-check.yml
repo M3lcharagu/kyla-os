@@ -1,0 +1,66 @@
+name: KYLA PR Check
+
+# Fast, free sanity checks on pull requests (no secrets, no paid APIs, ~1 min).
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Syntax — web JS, Python, YAML
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in web/*.js; do node --check "$f"; done
+          python -m pip install -q -r requirements.txt
+          python -m py_compile main.py tools/*.py integrations/*.py
+          python - <<'PY'
+          import glob, yaml
+          files = glob.glob("integrations/*.yaml") + glob.glob(".github/workflows/*.yml") + ["config.yaml"]
+          for f in files:
+              with open(f, encoding="utf-8") as fh:
+                  yaml.safe_load(fh)
+          print(f"YAML ok: {len(files)} files")
+          PY
+
+      - name: Routing + catalog smoke (dry-run)
+        env:
+          KYLA_CLONE_HEAVY: '0'
+        run: |
+          python main.py --dry-run "plan my week"
+          python tools/integrations_cli.py list > /dev/null
+          python tools/integrations_cli.py show supabase
+
+      - name: Supabase helper is a no-op without secrets
+        run: |
+          python tools/supabase_sink.py status
+          python tools/supabase_sink.py brief --file README.md
+          python tools/supabase_sink.py run --agent ci --output "ok"
+
+      - name: No server keys shipped in web/
+        shell: bash
+        run: |
+          if grep -RInE "sb_secret_[A-Za-z0-9]{6,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}" web/; then
+            echo "::error::A Supabase secret/service key or JWT appears in web/. Only the anon/publishable key may be public."
+            exit 1
+          fi
+          echo "web/ clean"
