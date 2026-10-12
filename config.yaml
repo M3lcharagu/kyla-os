@@ -1,12 +1,13 @@
 project:
   name: KYLA
   owner: Mel
-  version: "0.1.0"
+  version: "0.2.0"
 
 runtime:
   default_room: R1
   # Local-first: Ollama uses zero cloud credits. Cloud agents stay command:null.
-  default_agent: ruflo
+  # Jarvis stack: heyclicky (UI) → jarvis (orchestrator) → kyla-health / quant-mind
+  default_agent: jarvis
   dry_run: true
   # Clips need longer than chat; agents can still finish faster.
   timeout_seconds: 600
@@ -16,9 +17,9 @@ runtime:
 rooms:
   R1:
     name: HUMANITAS Command Center
-    purpose: Main command router
-    aliases: [humanitas, command center, commands, main, agency-agents, agency agents, ruflo, ruflow, swarm, hive, claude-flow, harness, awesome-harness]
-    default_agent: ruflo
+    purpose: Main command router / Jarvis front door
+    aliases: [humanitas, command center, commands, main, agency-agents, agency agents, ruflo, ruflow, swarm, hive, claude-flow, harness, awesome-harness, jarvis, heyclicky, helloclicky, clicky]
+    default_agent: jarvis
     suite: command
 
   R2:
@@ -30,9 +31,9 @@ rooms:
 
   R3:
     name: TEMPERANTIA Trading Room
-    purpose: Trading research and journaling
-    aliases: [temperantia, trading, markets, investing]
-    default_agent: shell
+    purpose: Trading research and journaling (paper / Quant Mind)
+    aliases: [temperantia, trading, markets, investing, quant, quant mind, forex, paper trade, portfolio]
+    default_agent: quant-mind
 
   R4:
     name: INDUSTRIA Dev Lab
@@ -108,6 +109,12 @@ rooms:
     aliases: [castitas, life os, life, habits, calendar]
     default_agent: shell
 
+  R15:
+    name: KYLA Health & Longevity
+    purpose: Biomarkers, lab interpretation (research), longevity protocols — educational only
+    aliases: [kyla health, health, longevity, biomarker, biomarkers, lab, labs, hba1c, cgm, wearable, apple health, biological age]
+    default_agent: kyla-health
+
 agents:
   # Cloud / external labels — left null so daily use burns ZERO paid credits.
   claude:
@@ -157,7 +164,6 @@ agents:
     mode: local
     command: "python tools/stack_agent.py --suite command"
 
-
   # ALWAYS-ON orchestrator (Ruflo / ruflow / claude-flow). Falls back to stack if Node missing.
   ruflo:
     mode: local
@@ -182,3 +188,24 @@ agents:
   catalog:
     mode: local
     command: "python tools/integrations_cli.py dispatch"
+
+  # --- Jarvis stack: HeyClicky + Kyla health + Quant Mind ---
+  heyclicky:
+    mode: local
+    command: "python tools/heyclicky_bridge.py"
+
+  helloclicky:
+    mode: local
+    command: "python tools/heyclicky_bridge.py"
+
+  kyla-health:
+    mode: local
+    command: "python tools/kyla_health_agent.py"
+
+  quant-mind:
+    mode: local
+    command: "python tools/quant_mind_agent.py"
+
+  jarvis:
+    mode: local
+    command: "python tools/jarvis_orchestrator.py"

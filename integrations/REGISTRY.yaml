@@ -1,7 +1,63 @@
 version: 1
 vendor_dir: stack
-updated: '2026-09-25'
+updated: '2026-10-12'
 integrations:
+- id: jarvis
+  name: Jarvis orchestrator (HeyClicky + specialists)
+  repo_url: "https://github.com/M3lcharagu/kyla-os"
+  rooms: [R1, R3, R15]
+  aliases: [jarvis, orchestrator]
+  install_hint: "Built-in — python tools/jarvis_orchestrator.py"
+  run_hint: python main.py --agent jarvis --execute "morning brief"
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: jarvis
+  install_kind: docs
+  heavy: false
+  note: "Routes to heyclicky, kyla-health, quant-mind. See docs/JARVIS_HEYCLICKY_KYLA.md"
+- id: heyclicky
+  name: HeyClicky interface bridge
+  repo_url: "https://github.com/M3lcharagu/kyla-os"
+  rooms: [R1]
+  aliases: [heyclicky, helloclicky, clicky]
+  install_hint: "Built-in bridge; native HeyClicky client is external"
+  run_hint: python main.py --agent heyclicky --dry-run "annotate this"
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: heyclicky
+  install_kind: docs
+  heavy: false
+  note: "Screen-aware UI layer stub — no capture until R13 + opt-in"
+- id: kyla-health
+  name: Kyla health / longevity specialist
+  repo_url: "https://github.com/M3lcharagu/kyla-os"
+  rooms: [R15, R14]
+  aliases: [kyla-health, kyla health, longevity, biomarker]
+  install_hint: "Built-in — educational framing only"
+  run_hint: python main.py --agent kyla-health --execute "HbA1c trend educational"
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: kyla-health
+  install_kind: docs
+  heavy: false
+  note: "NOT medical advice. Local memory only."
+- id: quant-mind
+  name: Quant Mind (paper markets)
+  repo_url: "https://github.com/M3lcharagu/kyla-quant"
+  rooms: [R3]
+  aliases: [quant-mind, quant mind, forex, paper trade]
+  install_hint: "Clone sibling kyla-quant; paper only"
+  run_hint: python main.py --agent quant-mind --dry-run "paper EURUSD"
+  detect_bins: []
+  credit_impact: local/$0
+  status: wired
+  wrapper: quant-mind
+  install_kind: docs
+  heavy: false
+  note: "No live execution. Links to kyla-quant when present."
 - id: ruflo
   name: Ruflo (agent meta-harness)
   repo_url: "https://github.com/ruvnet/ruflo"

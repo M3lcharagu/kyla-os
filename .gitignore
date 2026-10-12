@@ -20,6 +20,13 @@ env/
 data/
 state/
 
+# Personal memory / PHI / paper journals (never commit real health or balances)
+memory/profile.json
+memory/health/
+memory/quant/
+!memory/profile.example.json
+!memory/README.md
+
 # Editors
 .vscode/
 .idea/
