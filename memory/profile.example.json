@@ -1,0 +1,31 @@
+{
+  "owner": "Mel",
+  "version": 1,
+  "goals": [
+    "Stay consistent with paper trading journal",
+    "Track longevity research without treating outputs as medical advice"
+  ],
+  "preferences": {
+    "tone": "concise, calm, dry wit after useful result",
+    "default_agent": "jarvis",
+    "prefer_local": true
+  },
+  "health_flags": {
+    "note": "Educational tracking labels only — not a medical record",
+    "topics_of_interest": ["metabolic health", "sleep", "VO2max research"],
+    "recurring_jobs": [
+      {
+        "id": "kyla-clicky-monday",
+        "description": "Stub: review latest local lab notes, flag drift, morning brief",
+        "cadence": "weekly-monday",
+        "enabled": false
+      }
+    ]
+  },
+  "quant_prefs": {
+    "mode": "paper_only",
+    "focus": ["forex", "risk consistency"],
+    "max_daily_signals": 3
+  },
+  "last_brief": null
+}
