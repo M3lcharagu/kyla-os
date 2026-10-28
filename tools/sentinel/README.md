@@ -1,82 +1,64 @@
 # Sentinel
 
-Sentinel is a small desktop helper for Linux Mint XFCE. It can describe what is on your screen, draft a step-by-step action plan, and help create reminders. It is designed for an **XFCE session running on X11**; the installer warns when the desktop session differs.
+Sentinel is a small desktop helper for **XFCE on an X11 session**. It can send a screen capture and your question to a selected AI provider, show a tray menu, and save natural-language reminders locally. It does not claim Wayland support.
 
-## Install
+## Beginner installation (Linux Mint / Ubuntu)
 
-Open a terminal and run these lines **one at a time**, waiting for each to finish before entering the next. Start from your home folder. The setup script installs Sentinel's system and Python dependencies and prepares its desktop startup and keyboard shortcuts.
+Open Terminal. Run each block in order and wait for it to finish:
 
-```text
+```sh
 sudo apt update
+sudo apt install -y git
 ```
 
-```text
-sudo apt install --yes git
-```
-
-```text
+```sh
 git clone --branch main --depth 1 https://github.com/M3lcharagu/kyla-os.git
 ```
 
-```text
+```sh
 cd kyla-os/tools/sentinel
-```
-
-```text
 chmod +x setup.sh
-```
-
-```text
 ./setup.sh
 ```
 
-Run setup as your usual desktop user, **not as root**. It creates a local `.env` file from `.env.example` if one is not already there. After setup, add your provider and API key as described below, then log out and back in to XFCE. Setup installs Sentinel and its hotkey launcher in the desktop autostart folder, so it starts when you log in.
+Run setup as your normal desktop user, **not with sudo**. It installs the system packages, creates `.venv`, installs Python requirements, copies `.env.example` to `.env` only when `.env` does not already exist, and registers Sentinel and its xbindkeys hotkeys for autostart. Existing `.env` credentials are preserved. Setup also runs the self-check; a missing API key is reported until you configure one.
 
-### A local setup fix to know about
+### Add your provider key
 
-The checked-in `sentinel.py` source still has two issues: it uses `signal` without importing it, and its empty reminder hotkey request does not open the reminder dialog. The setup script applies those two small fixes **to the local clone's `sentinel.py` during installation**. It keeps a backup at `~/.local/share/sentinel/backups/sentinel.py.before-setup` when it applies the patch. This does not patch the GitHub source or create a source-code commit; the repository source remains unpatched.
+Open `tools/sentinel/.env` in a text editor. Set `SENTINEL_PROVIDER` to `anthropic`, `openai`, or `gemini`, and fill in only the matching key variable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY`). Never share or commit this file. Log out and back in to start Sentinel and register the shortcuts.
 
-## Choose an API provider and add your key
+## Self-check
 
-Sentinel supports three providers. Create a key with the provider you choose:
+From `kyla-os/tools/sentinel`, run:
 
-| Provider | Create a key | Provider setting | Key variable in `.env` |
-| --- | --- | --- | --- |
-| Anthropic | [console.anthropic.com](https://console.anthropic.com/) | `anthropic` | `ANTHROPIC_API_KEY` |
-| OpenAI | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | `openai` | `OPENAI_API_KEY` |
-| Google Gemini | [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) | `gemini` | `GEMINI_API_KEY` |
+```sh
+.venv/bin/python sentinel.py --self-check
+```
 
-Open `tools/sentinel/.env` in a text editor. Set `SENTINEL_PROVIDER` to the provider name in the table, and paste the key into the matching key variable. Fill in only the provider key you plan to use. You can also select a provider in Sentinel's **Settings** menu and optionally enter a model override; leaving the model blank uses that provider's built-in default. Keep the `.env` provider setting and the Settings choice aligned: `SENTINEL_PROVIDER` in `.env` takes precedence when Sentinel starts. The example file starts with `SENTINEL_PROVIDER=anthropic`.
+Each check prints `PASS` or `FAIL` and a one-line fix hint. It checks GTK/Python imports, DISPLAY/X11, `xset` and `xprintidle`, the selected provider key, opening the SQLite reminders database, and log writability. Run it again after fixing any reported issues.
 
-**Never put an API key in a repository file or share it in a screenshot.** The repository ignores `.env` and `.env.*` (while keeping `.env.example`), and setup preserves an existing `.env`. Your key is read locally from `.env` or the process environment. Sentinel sends the captured screen image and your request to the selected provider for processing, so do not use it on a screen you do not want to send to that provider.
+## Shortcuts and use
 
-## Use Sentinel
+After logging in, Sentinel appears in the tray. The global shortcuts are provided by xbindkeys:
 
-After logging back in, look for Sentinel in the desktop's tray area. Its configured global shortcuts are:
-
-| Shortcut | What it does |
+| Shortcut | Action |
 | --- | --- |
-| `Ctrl` + `Alt` + `C` | Capture the screen and ask for help or a description. |
-| `Ctrl` + `Alt` + `P` | Capture the screen and ask for an action plan. |
-| `Ctrl` + `Alt` + `S` | Open Settings. Choose a provider, optionally set a model override, and choose whether to keep processed screenshots. |
-| `Ctrl` + `Alt` + `L` | View the Sentinel log. |
-| `Ctrl` + `Alt` + `Space` | Pause or resume processing. |
-| `Ctrl` + `Alt` + `Q` | Quit Sentinel. |
-| `Ctrl` + `Alt` + `R` | Open the reminder dialog. |
+| Ctrl+Alt+C | Ask about the current screen |
+| Ctrl+Alt+P | Create an action-plan response |
+| Ctrl+Alt+S | Settings |
+| Ctrl+Alt+L | View logs |
+| Ctrl+Alt+Space | Pause / resume |
+| Ctrl+Alt+Q | Quit |
+| Super+Alt+R | Open the reminder input dialog |
 
-You can also use the tray menu for capture, action plans, reminders, Settings, logs, pause/resume, and quit. An action plan is shown for review first. It runs only after you choose **Confirm and run plan**; dismissing it leaves the actions unrun. Shell commands must exactly match a line in the safety allowlist. That list is empty by default, so shell-command steps are blocked unless you deliberately add an exact command. Destructive shell commands that are allowed require another confirmation. Review every proposed step before confirming, including keyboard and mouse actions.
+A reminder can be entered in plain language, for example “remind me to call Sam tomorrow at 9am”. The selected provider interprets it into a title and timezone-aware due time; Sentinel stores it in SQLite and uses `notify-send` when it is due. Sentinel must be running and the computer awake at the due time.
 
-For a reminder, enter a plain-language request, such as “remind me to call Sam tomorrow at 9am,” and choose **Parse and save**. Sentinel asks the selected provider to interpret the time, saves the reminder locally, and uses a desktop notification when it is due. The computer must be on and Sentinel running for its reminder check to run.
-
-## Screenshots, logs, and storage
-
-Sentinel captures a screenshot for each screen request and sends it to the selected provider. By default, the local screenshot file is deleted after the request finishes, including when a request fails. Turn on **Keep screenshots after processing** in Settings only if you want those local image files retained. Screenshots are stored under `~/.local/share/sentinel/screenshots/`.
-
-Sentinel prunes older files in its data folder toward a **500 MB** limit. It skips the active log and reminder database while pruning, so those protected files can leave the folder above the target. Logs are under `~/.local/share/sentinel/`; the tray's **View log** item opens the log viewer. Settings and reminder data are stored locally as well.
+The `.env` file supplies provider keys; the Settings dialog selects a provider and optional model override. Screenshots are retained only when retention is enabled in settings. Sentinel prunes the oldest files first to keep `logs/` plus retained screenshots within a combined 500 MiB limit. Local data is under `~/.local/share/sentinel/` by default.
 
 ## Troubleshooting
 
-- **No tray icon:** Log out and back in after setup. Sentinel's tray-icon setup can fail while the process continues, so a missing icon alone does not prove it stopped. Check whether the desktop panel is showing its tray/status icons. If needed, open `~/.local/share/sentinel/sentinel.log` in a text editor to look for startup or tray errors.
-- **A shortcut does nothing:** The shortcuts are registered by the installed `xbindkeys` launcher. Log out and back in after setup, check that you are in XFCE on X11, and check for another application using the same shortcut. The setup script is aimed at XFCE/X11; it does not promise working global shortcuts in other sessions.
-- **API error 401 / unauthorized:** Check that the key is active and belongs to the provider selected in Settings and `SENTINEL_PROVIDER`. Confirm that the matching variable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY`) in `.env` contains the key, with no accidental spaces. Do not post the key in logs, screenshots, or messages.
-- **You are using Wayland:** Setup is aimed at XFCE on X11. Global shortcuts and screen/input actions rely on X11-oriented tools, so they may not work in a Wayland session. Sign in to an XFCE X11 session for the setup described here; Wayland support is not claimed.
+- **No tray icon:** Log out and back in after setup. Check that the XFCE panel includes a notification area/status-tray plugin. The process can still run if the panel does not display its icon. Inspect `~/.local/share/sentinel/logs/sentinel.log`.
+- **A hotkey does nothing:** Confirm you are in XFCE on X11, log out and back in so the autostarted xbindkeys process loads the bindings, and check that another program is not using that shortcut. Verify `~/.config/sentinel/xbindkeysrc` and `~/.config/autostart/sentinel-hotkeys.desktop`; run `xbindkeys -n -f ~/.config/sentinel/xbindkeysrc` in a terminal to see xbindkeys errors (Ctrl+C stops that foreground test).
+- **API error 401 / unauthorized:** Check that the key in `tools/sentinel/.env` is valid and belongs to the provider selected by `SENTINEL_PROVIDER` or Sentinel Settings. Remove accidental spaces and use the matching key variable. Never paste a key into logs or messages.
+- **X11 vs Wayland:** This setup depends on X11-oriented desktop capture and hotkey tools. If `--self-check` reports Wayland or no DISPLAY, log into an XFCE X11 session instead. Wayland support is not claimed.
+- **Missing commands or Python imports:** Run `./setup.sh` again, then `.venv/bin/python sentinel.py --self-check`. Fix any remaining `FAIL` item using its printed hint.
