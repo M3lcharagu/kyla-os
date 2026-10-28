@@ -29,4 +29,8 @@ printf '[Desktop Entry]\nType=Application\nName=Sentinel\nComment=Start the Sent
 printf '[Desktop Entry]\nType=Application\nName=Sentinel hotkeys\nComment=Register Sentinel keyboard shortcuts\nExec="%s" -f "%s"\nTerminal=false\nX-GNOME-Autostart-enabled=true\n' "$XBINDS" "$HOTKEYS" > "$AUTOSTART/sentinel-hotkeys.desktop"
 chmod 600 "$AUTOSTART/sentinel.desktop" "$AUTOSTART/sentinel-hotkeys.desktop"
 printf 'Setup files installed. Log out and back in to start Sentinel and its shortcuts.\n\nRunning Sentinel self-check:\n'
+set +e
 "$PY" "$APP" --self-check
+CHECK_STATUS=$?
+set -e
+if [[ $CHECK_STATUS -ne 0 ]]; then echo 'Self-check reported failures; follow the hints above, then rerun --self-check.'; fi
