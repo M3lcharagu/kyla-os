@@ -1,0 +1,3 @@
+# Exact shell commands explicitly permitted for Sentinel action plans.
+# Add one exact command per line only after reviewing it carefully.
+# This default list is intentionally empty; shell commands are denied by default.
