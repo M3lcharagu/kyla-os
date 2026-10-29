@@ -18,10 +18,14 @@ def envload():
    if k and not k.startswith('#'): os.environ.setdefault(k,v)
  except OSError: pass
 def cfg():
- envload(); p=os.getenv('SENTINEL_PROVIDER','gemini').strip().lower()
- if p not in MODELS: p='gemini'
+ envload(); provider_env='SENTINEL_PROVIDER' if 'SENTINEL_PROVIDER' in os.environ else 'PROVIDER'; p=os.getenv(provider_env,'').strip().lower()
+ if p not in MODELS: raise RuntimeError(f'Invalid provider {p!r} from {provider_env}; expected gemini, anthropic, or openai.')
  mk={'gemini':'GEMINI_MODEL','anthropic':'ANTHROPIC_MODEL','openai':'OPENAI_MODEL'}[p]
  return {'provider':p,'model':os.getenv(mk,MODELS[p]).strip() or MODELS[p], 'scope':os.getenv('SENTINEL_SCOPE','full').lower().strip(),'target':os.getenv('SENTINEL_TARGET_WINDOW','').strip(),'tts':os.getenv('TTS_ENGINE','espeak-ng').lower().strip(),'voice':os.getenv('PIPER_VOICE','').strip()}
+def tts_available():
+ c=cfg()
+ if c['tts']=='piper' and shutil.which('piper') and c['voice'] and Path(c['voice']).exists() and shutil.which('aplay'): return True
+ return bool(shutil.which('espeak-ng'))
 def dirs():
  for p in (DATA,LOGS,SHOTS): p.mkdir(parents=True,exist_ok=True)
 def prune():
@@ -127,6 +131,24 @@ def self_check():
  except (OSError,subprocess.TimeoutExpired): xok=False
  out.append((xok,'DISPLAY / X11',f'DISPLAY={disp or "unset"}; session={sess or "unspecified"}','Log into an Xfce X11 session; Wayland is unsupported.'))
  tools=all(shutil.which(x) for x in ('xdotool','xwininfo')); out.append((tools,'xdotool + xwininfo','both available' if tools else 'one or both missing','Install xdotool and x11-utils for window-scope capture.'))
+ for command,hint in (('arecord','sudo apt install alsa-utils'),('aplay','sudo apt install alsa-utils'),('espeak-ng','sudo apt install espeak-ng')):
+  available=bool(shutil.which(command)); out.append((available,f'{command} installed','available' if available else 'not found',hint))
+ if os.getenv('TTS_ENGINE','espeak-ng').strip().lower()=='piper':
+  piper_installed=bool(shutil.which('piper')); voice=os.getenv('PIPER_VOICE','').strip(); voice_exists=bool(voice and Path(voice).exists())
+  out.append((piper_installed and voice_exists,'piper installed + PIPER_VOICE',f'piper={"installed" if piper_installed else "not found"}; PIPER_VOICE={voice or "unset"} ({"exists" if voice_exists else "missing"})','Install piper-tts or correct PIPER_VOICE.'))
+ capture_ok=False; capture_detail='arecord not installed'; wav=None
+ if shutil.which('arecord'):
+  try:
+   with tempfile.NamedTemporaryFile(suffix='.wav',delete=False) as f: wav=f.name
+   result=subprocess.run(['arecord','-q','-d','1',wav],capture_output=True,text=True,timeout=5)
+   capture_ok=result.returncode==0 and os.path.getsize(wav)>44
+   capture_detail='default input recorded for one second' if capture_ok else (result.stderr.strip() or f'arecord failed ({result.returncode}) or produced no usable WAV')
+  except (OSError,subprocess.TimeoutExpired) as e: capture_detail=str(e)
+  finally:
+   if wav:
+    try: os.unlink(wav)
+    except OSError: pass
+ out.append((capture_ok,'default ALSA capture device',capture_detail,'Check mic in alsamixer and set a default input.'))
  try: key_for(); good,detail=1,f'{cfg()["provider"]} API key configured'
  except Exception as e: good,detail=0,str(e)
  out.append((good,'provider API key',detail,'Set the matching API key in tools/sentinel/.env.'))
@@ -159,7 +181,9 @@ class Speech:
     if p.returncode==0 and shutil.which('aplay'):
      p=subprocess.Popen(['aplay','-q',wav]);
      with self.lock: self.proc=p
-     p.wait(); return
+     try: p.wait(timeout=30); return
+     except subprocess.TimeoutExpired:
+      logging.getLogger('sentinel').warning('aplay playback timed out after 30 seconds'); self.stop()
    except (OSError,subprocess.TimeoutExpired): self.stop()
    finally:
     if wav:
@@ -168,9 +192,11 @@ class Speech:
   exe=shutil.which('espeak-ng')
   if exe:
    try:
-    p=subprocess.Popen([exe,text]);
+    p=subprocess.Popen([exe,text])
     with self.lock: self.proc=p
-    p.wait()
+    p.wait(timeout=30)
+   except subprocess.TimeoutExpired:
+    logging.getLogger('sentinel').warning('espeak-ng playback timed out after 30 seconds'); self.stop()
    except OSError: pass
   with self.lock: self.proc=None
 class Overlay:
@@ -195,7 +221,9 @@ class App:
   self.Gtk,self.Gdk,self.GLib=Gtk,Gdk,GLib; self.log=logger(); dbinit(); self.busy=False; self.voice=Speech()
   self.w=Gtk.Window(title='Sentinel'); self.w.set_default_size(420,640); self.w.set_size_request(360,460); self.w.connect('destroy',Gtk.main_quit); self.w.connect('key-press-event',self.key)
   box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=7); box.set_border_width(10); self.w.add(box)
-  self.status=Gtk.Label(xalign=0); self.status.set_text(f'{cfg()["provider"]} / {cfg()["model"]}'); box.pack_start(self.status,False,False,0)
+  self.status=Gtk.Label(xalign=0); c=cfg(); status=f'{c["provider"]} / {c["model"]}'
+  if not tts_available(): status+=' | TTS unavailable'
+  self.status.set_text(status); box.pack_start(self.status,False,False,0)
   self.scroll=Gtk.ScrolledWindow(); self.scroll.set_policy(Gtk.PolicyType.NEVER,Gtk.PolicyType.AUTOMATIC); self.msgs=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=8); self.msgs.set_border_width(5); self.scroll.add(self.msgs); box.pack_start(self.scroll,True,True,0)
   bar=Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=5); self.entry=Gtk.Entry(); self.entry.set_placeholder_text('Ask Sentinel about your screen…'); self.entry.connect('activate',lambda *_:self.send()); bar.pack_start(self.entry,True,True,0)
   for title,fn in [('Send',lambda *_:self.send()),('Mic',lambda *_:self.mic()),('Mute',lambda b:self.mute(b))]:
